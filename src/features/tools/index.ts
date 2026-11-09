@@ -4,12 +4,26 @@ import { scheduleLinkTool } from "./tools/schedule-link";
 import { scheduleHighLevelTool } from "./tools/schedule-highlevel";
 import { checkAvailabilityTool } from "./tools/check-availability";
 import { customWebhookTool } from "./tools/custom-webhook";
+import {
+  agendaBookTool,
+  agendaCancelTool,
+  agendaMyAppointmentsTool,
+  agendaRescheduleTool,
+  agendaServicesTool,
+  agendaSlotsTool,
+} from "./tools/agenda";
 
 registry.register(echoTool);
 registry.register(scheduleLinkTool);
 registry.register(scheduleHighLevelTool);
 registry.register(checkAvailabilityTool);
 registry.register(customWebhookTool);
+registry.register(agendaServicesTool);
+registry.register(agendaSlotsTool);
+registry.register(agendaBookTool);
+registry.register(agendaMyAppointmentsTool);
+registry.register(agendaCancelTool);
+registry.register(agendaRescheduleTool);
 
 export { registry };
 export type {

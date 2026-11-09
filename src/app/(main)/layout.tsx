@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
   Building2,
+  CalendarDays,
   LayoutDashboard,
   LogOut,
   MessageCircle,
@@ -114,6 +115,17 @@ export default async function MainLayout({
             >
               <MessageCircle className="h-4 w-4" aria-hidden="true" />
               <span className="sr-only sm:not-sr-only sm:ml-2">Inbox</span>
+            </Button>
+          </Link>
+
+          <Link href="/agenda">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <CalendarDays className="h-4 w-4" aria-hidden="true" />
+              <span className="sr-only sm:not-sr-only sm:ml-2">Agenda</span>
             </Button>
           </Link>
 

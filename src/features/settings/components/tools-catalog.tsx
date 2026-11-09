@@ -11,6 +11,12 @@ import {
   Webhook,
   FlaskConical,
   Wrench,
+  ListChecks,
+  CalendarDays,
+  CalendarCheck,
+  CalendarX,
+  CalendarSync,
+  UserRound,
 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
@@ -40,6 +46,12 @@ const TOOL_ICONS: Record<string, React.ElementType> = {
   check_availability: CalendarSearch,
   custom_webhook: Webhook,
   echo: FlaskConical,
+  agenda_services: ListChecks,
+  agenda_slots: CalendarDays,
+  agenda_book: CalendarCheck,
+  agenda_my_appointments: UserRound,
+  agenda_cancel: CalendarX,
+  agenda_reschedule: CalendarSync,
 };
 
 // Escalating treatment: read (blue) → write (amber) → sensitive (orange + lock).

@@ -4,6 +4,7 @@ import { createClient as createSbClient } from "@supabase/supabase-js";
 import { getActiveWorkspace } from "@/features/workspace/services/active-workspace";
 import { listAgents } from "@/features/agents/services/agent-queries";
 import { SettingsShell } from "@/features/settings/components/settings-shell";
+import { loadBookingConfig } from "@/features/booking/services/booking-service";
 
 export default async function SettingsPage() {
   const supabase = await createClient();
@@ -62,7 +63,10 @@ export default async function SettingsPage() {
       .eq("workspace_id", workspaceId),
   ]);
 
-  const initialAgents = await listAgents(svc, workspaceId);
+  const [initialAgents, bookingConfig] = await Promise.all([
+    listAgents(svc, workspaceId),
+    loadBookingConfig(svc, workspaceId),
+  ]);
 
   // Mask credentials server-side before passing to client components
   function maskRecord(
@@ -120,6 +124,7 @@ export default async function SettingsPage() {
       initialTools={toolsWithEnabled}
       initialIntegrations={maskedIntegrations}
       initialAgents={initialAgents}
+      bookingConfig={bookingConfig}
     />
   );
 }
