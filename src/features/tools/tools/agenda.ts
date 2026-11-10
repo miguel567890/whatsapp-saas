@@ -42,6 +42,39 @@ function err(error: string): ToolResult {
   return { ok: false, output: null, error };
 }
 
+/** Normaliza para comparar nombres: minúsculas y sin tildes. */
+function norm(v: string): string {
+  return v
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase();
+}
+
+/**
+ * Los modelos a veces pasan el nombre ("Miguel", "Corte") en vez del ID.
+ * Aceptamos ambos para que una reserva no falle por eso.
+ */
+function resolveServiceId(config: BookingConfig, value: string): string {
+  const active = config.services.filter((s) => s.active);
+  if (active.some((s) => s.id === value)) return value;
+  const byName = active.find((s) => norm(s.name) === norm(value));
+  if (byName) return byName.id;
+  // Con un solo servicio activo no hay ambigüedad posible.
+  return active.length === 1 ? active[0].id : value;
+}
+
+function resolveStaffId(
+  config: BookingConfig,
+  value: string | undefined,
+): string | undefined {
+  if (!value) return undefined;
+  if (config.staff.some((s) => s.id === value)) return value;
+  const byName = config.staff.find((s) => norm(s.name) === norm(value));
+  // Si no se reconoce, mejor no filtrar por profesional que fallar.
+  return byName?.id;
+}
+
 function describeAppointment(a: AppointmentRow, config: BookingConfig) {
   const service = config.services.find((s) => s.id === a.service_id);
   const staff = config.staff.find((s) => s.id === a.staff_id);
@@ -147,10 +180,10 @@ async function runSlots(
 
   const res = await findSlots({
     workspaceId: ctx.workspaceId,
-    serviceId: args.service_id,
+    serviceId: resolveServiceId(config, args.service_id),
     dateFrom,
     dateTo,
-    staffId: args.staff_id,
+    staffId: resolveStaffId(config, args.staff_id),
     sb,
     config,
   });
@@ -244,9 +277,9 @@ async function runBook(
 
   const res = await createAppointment({
     workspaceId: ctx.workspaceId,
-    serviceId: args.service_id,
+    serviceId: resolveServiceId(config, args.service_id),
     start,
-    staffId: args.staff_id,
+    staffId: resolveStaffId(config, args.staff_id),
     contactId: ctx.contactId || null,
     conversationId: ctx.conversationId || null,
     customerName: args.customer_name,
@@ -363,7 +396,7 @@ async function runReschedule(
     workspaceId: ctx.workspaceId,
     appointmentId: args.appointment_id,
     newStart,
-    staffId: args.staff_id,
+    staffId: resolveStaffId(config, args.staff_id),
     contactId: ctx.contactId || null,
   });
   if (!res.ok) return err(res.error);

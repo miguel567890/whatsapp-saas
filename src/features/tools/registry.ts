@@ -56,7 +56,8 @@ async function logToolCall(
       type: "tool_call",
       level: result.ok ? "info" : "error",
       workspace_id: ctx.workspaceId,
-      conversation_id: ctx.conversationId,
+      // El playground no tiene conversación: "" rompería la FK uuid.
+      conversation_id: ctx.conversationId || null,
       payload: {
         tool_name: name,
         args_summary: sanitizeArgs(args),
