@@ -42,6 +42,15 @@ function err(error: string): ToolResult {
   return { ok: false, output: null, error };
 }
 
+/**
+ * El cliente habla en hora local del negocio. Si el modelo añade un offset
+ * (a veces el de otra zona), lo ignoramos y usamos la hora "de reloj".
+ */
+function parseLocalStart(input: string, timeZone: string): Date | null {
+  const wall = input.trim().replace(" ", "T").replace(/([zZ]|[+-]\d{2}:?\d{2})$/, "");
+  return parseStart(wall, timeZone);
+}
+
 /** Normaliza para comparar nombres: minúsculas y sin tildes. */
 function norm(v: string): string {
   return v
@@ -270,7 +279,7 @@ async function runBook(
 ): Promise<ToolResult> {
   const sb = bookingDb();
   const config = await loadBookingConfig(sb, ctx.workspaceId);
-  const start = parseStart(args.start, config.timeZone);
+  const start = parseLocalStart(args.start, config.timeZone);
   if (!start) return err("start no es una fecha-hora válida");
 
   if (!ctx.contactId && !args.customer_name) {
@@ -391,7 +400,7 @@ async function runReschedule(
 ): Promise<ToolResult> {
   const sb = bookingDb();
   const config = await loadBookingConfig(sb, ctx.workspaceId);
-  const newStart = parseStart(args.new_start, config.timeZone);
+  const newStart = parseLocalStart(args.new_start, config.timeZone);
   if (!newStart) return err("new_start no es una fecha-hora válida");
 
   const res = await rescheduleAppointment({

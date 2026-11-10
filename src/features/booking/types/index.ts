@@ -90,4 +90,6 @@ export interface BookingConfig {
   staff: BookingStaff[];
   timeOff: BookingTimeOff[];
   timeZone: string;
+  /** false si el negocio no ha elegido zona horaria (el agente usaría otra por defecto). */
+  timeZoneSet?: boolean;
 }

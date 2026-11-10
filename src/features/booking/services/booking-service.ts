@@ -76,7 +76,7 @@ export async function loadBookingConfig(
   sb: SupabaseClient,
   workspaceId: string,
 ): Promise<BookingConfig> {
-  const [settingsRes, servicesRes, staffRes, linksRes, hoursRes, offRes, tz] =
+  const [settingsRes, servicesRes, staffRes, linksRes, hoursRes, offRes, bizRes] =
     await Promise.all([
       sb
         .from("booking_settings")
@@ -111,8 +111,16 @@ export async function loadBookingConfig(
         .eq("workspace_id", workspaceId)
         .gte("ends_at", new Date(Date.now() - 86400000).toISOString())
         .order("starts_at"),
-      getWorkspaceTimeZone(sb, workspaceId),
+      sb
+        .from("business_info")
+        .select("structured")
+        .eq("workspace_id", workspaceId)
+        .maybeSingle(),
     ]);
+
+  const rawTz = (bizRes.data?.structured as { timezone?: string } | null)
+    ?.timezone;
+  const tz = safeTimeZone(rawTz);
 
   const settings: BookingSettings = {
     workspace_id: workspaceId,
@@ -151,6 +159,7 @@ export async function loadBookingConfig(
     staff,
     timeOff: (offRes.data ?? []) as BookingTimeOff[],
     timeZone: tz,
+    timeZoneSet: !!rawTz && rawTz === tz,
   };
 }
 

@@ -129,6 +129,12 @@ function SettingsForm({ workspaceId, initialConfig }: Props) {
       title="Ajustes de la agenda"
       description={`Zona horaria: ${initialConfig.timeZone} (se cambia en la pestaña Negocio).`}
     >
+      {initialConfig.timeZoneSet === false && (
+        <p className="rounded-lg border border-warning/40 bg-warning/10 p-3 text-sm">
+          No has elegido zona horaria en la pestaña <strong>Negocio</strong>. Hazlo
+          antes de activar la agenda: si no, el agente puede calcular mal las horas.
+        </p>
+      )}
       <div className="grid gap-4 sm:grid-cols-3">
         {field("slot_step_min", "Cada cuántos minutos", "Ej: 15 → 10:00, 10:15…")}
         {field("min_notice_min", "Antelación mínima (min)", "60 = no reservar con menos de 1 h")}
