@@ -196,38 +196,40 @@ async function runSlots(
     return (fromMin === null || m >= fromMin) && (toMin === null || m <= toMin);
   });
 
-  const isoByKey = new Map<string, string>();
-  for (const s of filtered) {
-    const p = localParts(s.start, config.timeZone);
-    const key = `${p.date} ${p.time}`;
-    if (!isoByKey.has(key)) isoByKey.set(key, toLocalIso(s.start, config.timeZone));
-  }
-
+  const multiStaff = res.data.staff.length > 1;
   const days = summarizeSlots(
     filtered,
     res.data.staff.map((s) => ({ id: s.id, name: s.name, hours: [] })),
     config.timeZone,
-  ).map((d) => ({
-    fecha: d.date,
-    dia: formatDayLabel(d.date),
-    horas: d.times.slice(0, MAX_TIMES_PER_DAY).map((t) => ({
-      hora: t.time,
-      inicio_iso: isoByKey.get(`${d.date} ${t.time}`),
-      profesionales_libres: t.staff,
-    })),
-  }));
+  ).map((d) => {
+    const times = d.times.slice(0, MAX_TIMES_PER_DAY);
+    return {
+      fecha: d.date,
+      dia: formatDayLabel(d.date),
+      // Lista simple de horas: es lo que mejor leen los modelos.
+      horas_libres: times.map((t) => t.time),
+      ...(multiStaff
+        ? {
+            profesionales_por_hora: Object.fromEntries(
+              times.map((t) => [t.time, t.staff]),
+            ),
+          }
+        : {}),
+    };
+  });
 
   return {
     ok: true,
     output: {
       servicio: res.data.service.name,
+      service_id: res.data.service.id,
       duracion_min: res.data.service.duration_min,
       rango: { desde: dateFrom, hasta: dateTo },
       dias_con_huecos: days,
       nota:
         days.length === 0
           ? "No hay huecos en ese rango. Prueba otros días o pregunta otra preferencia."
-          : "Ofrece al cliente 2 o 3 opciones, no la lista entera. Para reservar usa inicio_iso.",
+          : 'Cualquier hora de horas_libres está disponible. Ofrece 2 o 3 opciones, no la lista entera. Para reservar usa start = "fecha" + "T" + "hora" (ej: 2026-11-12T19:00).',
     },
   };
 }
@@ -235,7 +237,7 @@ async function runSlots(
 export const agendaSlotsTool: Tool<z.infer<typeof slotsSchema>> = {
   name: "agenda_slots",
   description:
-    "Devuelve los huecos libres REALES de la agenda para un servicio en un rango de días. Nunca inventes horas: ofrece solo las que devuelve esta herramienta.",
+    "Devuelve los huecos libres REALES de la agenda para un servicio en un rango de días. Nunca inventes horas: ofrece solo las que devuelve esta herramienta. Si el cliente pide una hora concreta, pasa from_time y to_time con esa misma hora para comprobarla.",
   sensitivity: "read",
   schema: slotsSchema,
   enabledFor: () => true,
@@ -249,7 +251,7 @@ const bookSchema = z.object({
   start: z
     .string()
     .describe(
-      "Inicio de la cita: el inicio_iso de agenda_slots (ej: 2026-11-10T17:30:00+01:00)",
+      "Inicio de la cita en hora local del negocio: fecha + T + hora de agenda_slots (ej: 2026-11-12T19:00)",
     ),
   staff_id: z
     .string()
@@ -301,7 +303,7 @@ async function runBook(
 export const agendaBookTool: Tool<z.infer<typeof bookSchema>> = {
   name: "agenda_book",
   description:
-    "Reserva la cita en la agenda. Úsala SOLO cuando el cliente haya confirmado servicio, día y hora, usando un inicio_iso devuelto por agenda_slots.",
+    "Reserva la cita en la agenda. Úsala SOLO cuando el cliente haya confirmado servicio, día y hora, usando una fecha y hora devueltas por agenda_slots.",
   sensitivity: "write",
   schema: bookSchema,
   enabledFor: () => true,
@@ -379,7 +381,7 @@ const rescheduleSchema = z.object({
   appointment_id: z.string().describe("ID de la cita a mover"),
   new_start: z
     .string()
-    .describe("Nuevo inicio: un inicio_iso devuelto por agenda_slots"),
+    .describe("Nuevo inicio en hora local: fecha + T + hora de agenda_slots (ej: 2026-11-12T19:00)"),
   staff_id: z.string().optional().describe("Solo si cambia de profesional"),
 });
 
