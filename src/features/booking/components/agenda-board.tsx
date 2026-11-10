@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   CalendarCheck,
   CalendarPlus,
@@ -68,6 +69,7 @@ function NewAppointmentForm({
     notes: "",
   });
   const [pending, start] = useTransition();
+  const router = useRouter();
   const staff = config.staff.filter(
     (s) =>
       s.active &&
@@ -83,6 +85,7 @@ function NewAppointmentForm({
       if (res.ok) {
         toast.success("Cita creada");
         onDone();
+        router.refresh();
       } else toast.error(res.error);
     });
   }
@@ -205,6 +208,7 @@ function AppointmentCard({
   config: BookingConfig;
 }) {
   const [pending, start] = useTransition();
+  const router = useRouter();
   const [moving, setMoving] = useState(false);
   const startLocal = localParts(new Date(appt.scheduled_at), config.timeZone);
   const endLocal = appt.ends_at
@@ -220,8 +224,10 @@ function AppointmentCard({
   function run(fn: () => Promise<{ ok: boolean; error?: string }>, okMsg: string) {
     start(async () => {
       const res = await fn();
-      if (res.ok) toast.success(okMsg);
-      else toast.error(res.error ?? "Error");
+      if (res.ok) {
+        toast.success(okMsg);
+        router.refresh();
+      } else toast.error(res.error ?? "Error");
     });
   }
 

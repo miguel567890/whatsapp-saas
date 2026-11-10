@@ -103,8 +103,9 @@ const serviceSchema = z.object({
     .optional()
     .transform((v) => (v ? v : null)),
   duration_min: z.coerce.number().int().min(5).max(600),
+  // null primero: z.coerce.number() convertiría null en 0.
   price: z
-    .union([z.coerce.number().min(0).max(100000), z.null()])
+    .union([z.null(), z.literal("").transform(() => null), z.coerce.number().min(0).max(100000)])
     .optional()
     .transform((v) => (v === undefined ? null : v)),
   active: z.boolean().default(true),

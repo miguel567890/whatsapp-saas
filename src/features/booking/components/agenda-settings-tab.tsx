@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import {
   CalendarOff,
   Clock,
@@ -93,6 +94,7 @@ function SettingsForm({ workspaceId, initialConfig }: Props) {
     reminder_template_language: s.reminder_template_language,
   });
   const [pending, start] = useTransition();
+  const router = useRouter();
 
   function save() {
     start(async () => {
@@ -100,7 +102,10 @@ function SettingsForm({ workspaceId, initialConfig }: Props) {
         ...form,
         reminder_template_name: form.reminder_template_name || null,
       });
-      if (res.ok) toast.success("Ajustes de agenda guardados");
+      if (res.ok) {
+        toast.success("Ajustes de agenda guardados");
+        router.refresh();
+      }
       else toast.error(res.error);
     });
   }
@@ -208,6 +213,7 @@ function ServicesSection({
 }) {
   const [draft, setDraft] = useState<ServiceDraft | null>(null);
   const [pending, start] = useTransition();
+  const router = useRouter();
 
   function save() {
     if (!draft) return;
@@ -223,6 +229,7 @@ function ServicesSection({
       if (res.ok) {
         toast.success("Servicio guardado");
         setDraft(null);
+        router.refresh();
       } else toast.error(res.error);
     });
   }
@@ -231,7 +238,10 @@ function ServicesSection({
     if (!confirm("¿Borrar este servicio? Las citas ya hechas se conservan.")) return;
     start(async () => {
       const res = await deleteService(workspaceId, id);
-      if (res.ok) toast.success("Servicio borrado");
+      if (res.ok) {
+        toast.success("Servicio borrado");
+        router.refresh();
+      }
       else toast.error(res.error);
     });
   }
@@ -501,6 +511,7 @@ function StaffSection({
 }) {
   const [draft, setDraft] = useState<StaffDraft | null>(null);
   const [pending, start] = useTransition();
+  const router = useRouter();
 
   function save() {
     if (!draft) return;
@@ -509,6 +520,7 @@ function StaffSection({
       if (res.ok) {
         toast.success("Profesional guardado");
         setDraft(null);
+        router.refresh();
       } else toast.error(res.error);
     });
   }
@@ -517,7 +529,10 @@ function StaffSection({
     if (!confirm("¿Borrar este profesional y su horario?")) return;
     start(async () => {
       const res = await deleteStaff(workspaceId, id);
-      if (res.ok) toast.success("Profesional borrado");
+      if (res.ok) {
+        toast.success("Profesional borrado");
+        router.refresh();
+      }
       else toast.error(res.error);
     });
   }
@@ -667,6 +682,7 @@ function TimeOffSection({ workspaceId, initialConfig }: Props) {
     reason: "",
   });
   const [pending, start] = useTransition();
+  const router = useRouter();
   const staffName = useMemo(
     () => new Map(initialConfig.staff.map((s) => [s.id, s.name])),
     [initialConfig.staff],
@@ -688,6 +704,7 @@ function TimeOffSection({ workspaceId, initialConfig }: Props) {
       });
       if (res.ok) {
         toast.success("Cierre añadido");
+        router.refresh();
         setForm({ staff_id: "", date_from: "", date_to: "", reason: "" });
       } else toast.error(res.error);
     });
@@ -696,7 +713,10 @@ function TimeOffSection({ workspaceId, initialConfig }: Props) {
   function remove(id: string) {
     start(async () => {
       const res = await deleteTimeOff(workspaceId, id);
-      if (res.ok) toast.success("Cierre borrado");
+      if (res.ok) {
+        toast.success("Cierre borrado");
+        router.refresh();
+      }
       else toast.error(res.error);
     });
   }
