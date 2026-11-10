@@ -297,7 +297,41 @@ async function runBook(
     notes: args.notes,
     source: "agent",
   });
-  if (!res.ok) return err(res.error);
+  if (!res.ok) {
+    if (res.code !== "slot_unavailable") return err(res.error);
+    // Dar al modelo alternativas concretas para que no entre en bucle.
+    const day = localParts(start, config.timeZone).date;
+    const alt = await findSlots({
+      workspaceId: ctx.workspaceId,
+      serviceId: resolveServiceId(config, args.service_id),
+      dateFrom: day,
+      dateTo: addDays(day, 2),
+      sb,
+      config,
+    });
+    const nearest = alt.ok
+      ? [...alt.data.slots]
+          .sort(
+            (a, b) =>
+              Math.abs(a.start.getTime() - start.getTime()) -
+              Math.abs(b.start.getTime() - start.getTime()),
+          )
+          .filter(
+            (s, i, arr) =>
+              arr.findIndex((x) => x.start.getTime() === s.start.getTime()) === i,
+          )
+          .slice(0, 3)
+          .sort((a, b) => a.start.getTime() - b.start.getTime())
+          .map((s) => formatHuman(s.start, config.timeZone))
+      : [];
+    return err(
+      `RESERVA NO HECHA: ${formatHuman(start, config.timeZone)} ya no está libre. ` +
+        (nearest.length
+          ? `Huecos más cercanos: ${nearest.join("; ")}. `
+          : "") +
+        "Díselo al cliente con claridad (no digas que está reservada) y ofrécele estas alternativas.",
+    );
+  }
 
   return {
     ok: true,

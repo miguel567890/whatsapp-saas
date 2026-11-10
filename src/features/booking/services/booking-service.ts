@@ -233,6 +233,12 @@ export interface FindSlotsParams {
   excludeAppointmentId?: string;
   /** false en el panel: el dueño puede reservar sin antelación mínima ni límite de días. */
   enforceBookingWindow?: boolean;
+  /**
+   * Margen (min) que se descuenta de la antelación mínima. Al reservar se usa
+   * para que una hora ofrecida hace unos minutos no "caduque" mientras el
+   * cliente contesta.
+   */
+  noticeGraceMin?: number;
   sb?: SupabaseClient;
   config?: BookingConfig;
 }
@@ -274,9 +280,11 @@ export async function findSlots(
 
   const enforce = p.enforceBookingWindow ?? true;
   const now = Date.now();
-  const notBefore = enforce
-    ? new Date(now + config.settings.min_notice_min * 60000)
-    : new Date(0);
+  const noticeMin = Math.max(
+    0,
+    config.settings.min_notice_min - (p.noticeGraceMin ?? 0),
+  );
+  const notBefore = enforce ? new Date(now + noticeMin * 60000) : new Date(0);
   const notAfter = enforce
     ? new Date(now + config.settings.max_days_ahead * 86400000)
     : new Date(8.64e15);
@@ -330,6 +338,9 @@ export interface CreateAppointmentParams {
 
 const EXCLUSION_VIOLATION = "23P01";
 
+/** Minutos de margen sobre la antelación mínima al confirmar una reserva. */
+const BOOKING_NOTICE_GRACE_MIN = 30;
+
 export async function createAppointment(
   p: CreateAppointmentParams,
 ): Promise<BookingResult<AppointmentRow>> {
@@ -374,6 +385,7 @@ export async function createAppointment(
       staffId: p.staffId,
       sb,
       config,
+      noticeGraceMin: BOOKING_NOTICE_GRACE_MIN,
     });
     if (!res.ok) return res;
     const match = res.data.slots.filter((s) => s.start.getTime() === startMs);
@@ -580,6 +592,7 @@ export async function rescheduleAppointment(p: {
       excludeAppointmentId: appt.id,
       sb,
       config,
+      noticeGraceMin: BOOKING_NOTICE_GRACE_MIN,
     });
     if (!res.ok) return res;
     const match = res.data.slots.filter((s) => s.start.getTime() === startMs);
