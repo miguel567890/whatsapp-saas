@@ -10,6 +10,8 @@ import { AutomationsTab } from "./automations-tab";
 import { KbTab } from "./kb-tab";
 import { AgentsTab } from "@/features/agents/components/agents-tab";
 import type { AgentDto } from "@/features/agents/types";
+import { AgendaSettingsTab } from "@/features/booking/components/agenda-settings-tab";
+import type { BookingConfig } from "@/features/booking/types";
 
 interface ToolItem {
   id: string;
@@ -29,6 +31,7 @@ interface Props {
   initialIntegrations: unknown[];
   initialTemplates?: unknown[];
   initialAgents?: AgentDto[];
+  bookingConfig: BookingConfig;
 }
 
 export function SettingsShell({
@@ -38,6 +41,7 @@ export function SettingsShell({
   initialIntegrations,
   initialTemplates = [],
   initialAgents = [],
+  bookingConfig,
 }: Props) {
   const biForForm = initialBusinessInfo as {
     structured: Record<string, unknown>;
@@ -58,6 +62,7 @@ export function SettingsShell({
             <TabsTrigger value="agentes">Agentes</TabsTrigger>
             <TabsTrigger value="integraciones">Integraciones</TabsTrigger>
             <TabsTrigger value="negocio">Negocio</TabsTrigger>
+            <TabsTrigger value="agenda">Agenda</TabsTrigger>
             <TabsTrigger value="tools">Tools</TabsTrigger>
             <TabsTrigger value="templates">Templates</TabsTrigger>
             <TabsTrigger value="knowledge-base">Knowledge Base</TabsTrigger>
@@ -87,6 +92,15 @@ export function SettingsShell({
         <TabsContent value="negocio">
           <div className="p-6 space-y-6 rounded-lg border border-border/60 bg-card">
             <BusinessInfoForm workspaceId={workspaceId} initial={biForForm} />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="agenda">
+          <div className="p-6 rounded-lg border border-border/60 bg-card">
+            <AgendaSettingsTab
+              workspaceId={workspaceId}
+              initialConfig={bookingConfig}
+            />
           </div>
         </TabsContent>
 

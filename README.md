@@ -35,6 +35,9 @@ Supabase/Vercel.
   como un solo turno coherente).
 - **Motor de agente** con state machine + handoff humano, prompting personalizable
   y tools activables (incluye modo setter y agendamiento).
+- **Agenda propia** (sin HighLevel): servicios, profesionales con horario
+  (turno partido), cierres, reservas por WhatsApp, panel `/agenda` y
+  recordatorios automáticos. Ver [Calendario propio](#calendario-propio).
 - **CRM** con sincronización opcional a HighLevel (por workspace).
 - **Knowledge Base** con búsqueda semántica (pgvector).
 - **Templates** y manejo de la ventana de 24h de Meta.
@@ -109,6 +112,33 @@ El inbox agrupa los mensajes entrantes en _batches_ que un worker debe drenar
 distribución agenda el flush dentro de Postgres con **pg_cron + pg_net**, que
 llaman a `/api/cron/buffer-flush` (autenticado con `CRON_SECRET`). Lo configura el
 instalador — ver [`supabase/cron/schedule-buffer-flush.sql`](supabase/cron/schedule-buffer-flush.sql).
+
+## Calendario propio
+
+Agenda nativa por workspace, sin depender de HighLevel.
+
+**Puesta en marcha**
+
+1. Aplica la migración `20261109000000_native_calendar.sql` (`supabase db push`).
+2. En **Configuración → Negocio**, revisa la zona horaria (p. ej. `Europe/Madrid`).
+3. En **Configuración → Agenda**, crea servicios (con duración) y profesionales
+   con su horario semanal. Si un profesional no tiene servicios marcados, hace todos.
+4. En **Configuración → Tools**, activa las tools `Agenda: …` (servicios, huecos,
+   reservar, mis citas, cancelar, cambiar). Desactiva las de HighLevel si no las usas.
+5. Programa los recordatorios con
+   [`supabase/cron/schedule-booking-reminders.sql`](supabase/cron/schedule-booking-reminders.sql).
+   Fuera de la ventana de 24 h se necesita una plantilla aprobada con
+   `{{1}}` nombre, `{{2}}` servicio, `{{3}}` fecha y `{{4}}` hora.
+
+**Cómo funciona**
+
+- El agente consulta huecos reales (`agenda_slots`), el cliente elige y se reserva
+  con `agenda_book`. Solo puede ver, cancelar o mover las citas de su propio contacto.
+- Un constraint `EXCLUDE` en Postgres impide que un profesional tenga dos citas
+  solapadas aunque dos conversaciones reserven a la vez.
+- El panel `/agenda` muestra la semana, permite crear citas a mano (llamadas,
+  mostrador), confirmarlas, moverlas, cancelarlas y marcar "hecha" / "no vino".
+- Tests del motor de huecos: `npx tsx --test src/features/booking/lib/availability.test.ts`.
 
 ## Estructura
 
