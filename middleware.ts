@@ -1,13 +1,24 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+/** Dominio público de Citaya (portada + páginas de reservas). */
+const PUBLIC_HOST = new RegExp(
+  `^${process.env.PUBLIC_HOST_RE ?? "(?:www\\.)?holacitaya\\.app"}$`,
+  "i",
+);
+
 /** Páginas públicas (reservas y portada): no necesitan sesión. */
-function isAnonymousPage(pathname: string): boolean {
-  return pathname.startsWith("/r/") || pathname === "/bienvenida";
+function isAnonymousPage(request: NextRequest): boolean {
+  const { pathname } = request.nextUrl;
+  if (pathname.startsWith("/r/") || pathname === "/bienvenida") return true;
+  // En el dominio público todo es anónimo: las rutas del panel ya se han
+  // redirigido a panel.holacitaya.app en next.config (antes del middleware).
+  const host = (request.headers.get("host") ?? "").split(":")[0];
+  return PUBLIC_HOST.test(host);
 }
 
 export async function middleware(request: NextRequest) {
-  if (isAnonymousPage(request.nextUrl.pathname)) return NextResponse.next();
+  if (isAnonymousPage(request)) return NextResponse.next();
 
   let supabaseResponse = NextResponse.next({ request });
 
