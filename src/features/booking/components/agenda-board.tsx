@@ -47,7 +47,7 @@ const selectClass =
 
 // ── Formulario de nueva cita ──────────────────────────────────────────────────
 
-function NewAppointmentForm({
+export function NewAppointmentForm({
   workspaceId,
   config,
   defaultDate,
@@ -94,8 +94,8 @@ function NewAppointmentForm({
     return (
       <p className="rounded-lg border border-dashed border-border/60 p-4 text-sm text-muted-foreground">
         Primero crea servicios y profesionales en{" "}
-        <Link href="/settings" className="underline">
-          Configuración → Agenda
+        <Link href="/negocio" className="underline">
+          Mi negocio
         </Link>
         .
       </p>
@@ -198,7 +198,7 @@ function NewAppointmentForm({
 
 // ── Tarjeta de cita ───────────────────────────────────────────────────────────
 
-function AppointmentCard({
+export function AppointmentCard({
   appt,
   workspaceId,
   config,
@@ -502,7 +502,7 @@ export function AgendaBoard({
           <p className="mb-3 text-sm text-muted-foreground">
             Añade servicios, profesionales y horario para empezar a recibir citas.
           </p>
-          <Link href="/settings">
+          <Link href="/negocio">
             <Button size="sm">Configurar agenda</Button>
           </Link>
         </div>

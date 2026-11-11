@@ -584,7 +584,7 @@ export function OnboardingWizard() {
         ) : (
           <Button
             type="button"
-            onClick={() => router.push("/inbox")}
+            onClick={() => router.push("/hoy")}
             className="w-full sm:w-auto"
           >
             Ir al inbox

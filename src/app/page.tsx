@@ -19,5 +19,5 @@ export async function generateMetadata() {
 // holacitaya.app → portada de Citaya. Panel → bandeja de entrada.
 export default async function Home() {
   if (await isPublicHost()) return <WelcomePage />;
-  redirect("/inbox");
+  redirect("/hoy");
 }

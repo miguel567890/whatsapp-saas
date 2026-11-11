@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Search } from "lucide-react";
+import { ArrowLeft, Search } from "lucide-react";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -17,9 +18,9 @@ type FilterTab = "all" | "ai_active" | "human_active" | "handoff_pending";
 
 const TABS: { id: FilterTab; label: string }[] = [
   { id: "all", label: "Todos" },
-  { id: "ai_active", label: "IA activa" },
-  { id: "human_active", label: "Humano" },
-  { id: "handoff_pending", label: "Handoff" },
+  { id: "ai_active", label: "Recepcionista" },
+  { id: "human_active", label: "Tú" },
+  { id: "handoff_pending", label: "Te necesitan" },
 ];
 
 interface InboxLayoutProps {
@@ -58,12 +59,16 @@ export function InboxLayout({
     });
   }, [conversations, search, activeTab]);
 
+  // En el móvil se ve una cosa cada vez: la lista o la conversación abierta.
+  const threadOpen = /^\/inbox\/[^/]+/.test(pathname);
+
   return (
-    <div className="flex h-[calc(100vh-3.5rem)] overflow-hidden">
+    <div className="flex h-[calc(100dvh-7.5rem)] md:h-[calc(100dvh-3.5rem)] overflow-hidden">
       {/* Left panel — conversation list */}
       <aside
         className={cn(
-          "w-80 shrink-0 border-r border-border/50 flex flex-col overflow-hidden",
+          "w-full md:w-80 shrink-0 md:border-r border-border/50 flex-col overflow-hidden",
+          threadOpen ? "hidden md:flex" : "flex",
         )}
         aria-label="Conversaciones"
       >
@@ -71,7 +76,7 @@ export function InboxLayout({
         <div className="shrink-0 px-4 pt-3 pb-2 border-b border-border/50 space-y-2">
           <div className="flex items-baseline justify-between">
             <h1 className="font-display text-sm font-semibold text-foreground">
-              Inbox
+              Mensajes
             </h1>
             <p className="text-xs text-muted-foreground">
               {filtered.length} de {conversations.length}
@@ -155,7 +160,23 @@ export function InboxLayout({
       </aside>
 
       {/* Right panel — thread / detail */}
-      <main className="flex-1 overflow-hidden">{children}</main>
+      <main
+        className={cn(
+          "flex-1 flex-col overflow-hidden",
+          threadOpen ? "flex" : "hidden md:flex",
+        )}
+      >
+        {threadOpen && (
+          <Link
+            href="/inbox"
+            className="md:hidden flex shrink-0 items-center gap-1 border-b border-border/50 px-3 py-2 text-xs text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
+            Todos los mensajes
+          </Link>
+        )}
+        <div className="min-h-0 flex-1 overflow-hidden">{children}</div>
+      </main>
     </div>
   );
 }

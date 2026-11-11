@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createSbClient } from "@supabase/supabase-js";
 import { getActiveWorkspace } from "@/features/workspace/services/active-workspace";
+import { getPanelMode } from "@/features/workspace/services/panel-mode";
 import { listAgents } from "@/features/agents/services/agent-queries";
 import { SettingsShell } from "@/features/settings/components/settings-shell";
 import { loadBookingConfig } from "@/features/booking/services/booking-service";
@@ -14,6 +15,9 @@ export default async function SettingsPage() {
   } = await supabase.auth.getUser();
 
   if (!user) redirect("/login");
+  // La configuración técnica (agente, integraciones, tools) es solo de la
+  // agencia. El negocio gestiona lo suyo en "Mi negocio".
+  if ((await getPanelMode(supabase, user.id)) === "business") redirect("/negocio");
 
   const membership = await getActiveWorkspace(supabase, user.id);
 

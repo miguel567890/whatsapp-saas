@@ -9,15 +9,8 @@ import { WorkspaceSwitcher } from "@/features/workspace/components/workspace-swi
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import {
-  Building2,
-  CalendarDays,
-  LayoutDashboard,
-  LogOut,
-  MessageCircle,
-  Settings,
-} from "lucide-react";
-import Link from "next/link";
+import { LogOut } from "lucide-react";
+import { BottomNav, TopNav } from "@/components/main-nav";
 
 export default async function MainLayout({
   children,
@@ -60,7 +53,7 @@ export default async function MainLayout({
         {/* Left: brand + workspace name */}
         <div className="flex items-center gap-2 min-w-0">
           <span className="font-display text-base font-semibold text-primary tracking-tight shrink-0">
-            Agente WA
+            Citaya
           </span>
           {workspaceName && (
             <>
@@ -90,67 +83,10 @@ export default async function MainLayout({
           )}
         </div>
 
-        {/* Right: agency link (super admin only) + dashboard + settings + logout */}
+        {/* Right: navigation + theme + logout */}
         <div className="flex items-center gap-1 shrink-0">
+          <TopNav agency={isSuperAdmin} />
           <ThemeToggle />
-
-          {isSuperAdmin && (
-            <Link href="/workspaces">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <Building2 className="h-4 w-4" aria-hidden="true" />
-                <span className="sr-only sm:not-sr-only sm:ml-2">Agency</span>
-              </Button>
-            </Link>
-          )}
-
-          <Link href="/inbox">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-muted-foreground hover:text-foreground"
-            >
-              <MessageCircle className="h-4 w-4" aria-hidden="true" />
-              <span className="sr-only sm:not-sr-only sm:ml-2">Inbox</span>
-            </Button>
-          </Link>
-
-          <Link href="/agenda">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-muted-foreground hover:text-foreground"
-            >
-              <CalendarDays className="h-4 w-4" aria-hidden="true" />
-              <span className="sr-only sm:not-sr-only sm:ml-2">Agenda</span>
-            </Button>
-          </Link>
-
-          <Link href="/dashboard">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-muted-foreground hover:text-foreground"
-            >
-              <LayoutDashboard className="h-4 w-4" aria-hidden="true" />
-              <span className="sr-only sm:not-sr-only sm:ml-2">Dashboard</span>
-            </Button>
-          </Link>
-
-          <Link href="/settings">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-muted-foreground hover:text-foreground"
-            >
-              <Settings className="h-4 w-4" aria-hidden="true" />
-              <span className="sr-only sm:not-sr-only sm:ml-2">Settings</span>
-            </Button>
-          </Link>
-
           <form action={logout}>
             <Button
               type="submit"
@@ -165,51 +101,9 @@ export default async function MainLayout({
         </div>
       </header>
 
-      <div className="flex-1 pb-14 md:pb-0">{children}</div>
+      <div className="flex-1 pb-16 md:pb-0">{children}</div>
 
-      {/* Mobile bottom nav — hidden on md+ */}
-      <nav
-        className={cn(
-          "md:hidden fixed bottom-0 inset-x-0 z-50 h-14",
-          "glass-strong border-t border-border/50",
-          "flex items-center justify-around px-4",
-        )}
-        aria-label="Navegación móvil"
-      >
-        <Link
-          href="/inbox"
-          className="flex flex-col items-center gap-0.5 text-xs text-muted-foreground hover:text-primary transition-colors"
-        >
-          <MessageCircle className="h-5 w-5" aria-hidden="true" />
-          <span>Inbox</span>
-        </Link>
-
-        <Link
-          href="/dashboard"
-          className="flex flex-col items-center gap-0.5 text-xs text-muted-foreground hover:text-primary transition-colors"
-        >
-          <LayoutDashboard className="h-5 w-5" aria-hidden="true" />
-          <span>Dashboard</span>
-        </Link>
-
-        <Link
-          href="/settings"
-          className="flex flex-col items-center gap-0.5 text-xs text-muted-foreground hover:text-primary transition-colors"
-        >
-          <Settings className="h-5 w-5" aria-hidden="true" />
-          <span>Settings</span>
-        </Link>
-
-        {isSuperAdmin && (
-          <Link
-            href="/workspaces"
-            className="flex flex-col items-center gap-0.5 text-xs text-muted-foreground hover:text-primary transition-colors"
-          >
-            <Building2 className="h-5 w-5" aria-hidden="true" />
-            <span>Agency</span>
-          </Link>
-        )}
-      </nav>
+      <BottomNav agency={isSuperAdmin} />
     </div>
   );
 }

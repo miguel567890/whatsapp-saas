@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveWorkspace } from "@/features/workspace/services/active-workspace";
+import { getPanelMode } from "@/features/workspace/services/panel-mode";
 import {
   getWorkspaceMetrics,
   getRecentConversations,
@@ -17,6 +18,8 @@ export default async function DashboardPage() {
   } = await supabase.auth.getUser();
 
   if (!user) redirect("/login");
+  // Las métricas técnicas son del panel de agencia; el negocio usa "Hoy".
+  if ((await getPanelMode(supabase, user.id)) === "business") redirect("/hoy");
 
   const membership = await getActiveWorkspace(supabase, user.id);
 

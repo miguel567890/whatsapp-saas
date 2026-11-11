@@ -54,6 +54,8 @@ interface Props {
   workspaceId: string;
   initialConfig: BookingConfig;
   businessName?: string | null;
+  /** Vista del negocio: oculta referencias a la configuración técnica. */
+  simple?: boolean;
 }
 
 function Section({
@@ -936,7 +938,12 @@ function PublicPageSection({ workspaceId, initialConfig, businessName }: Props) 
 
 // ── Pestaña completa ──────────────────────────────────────────────────────────
 
-export function AgendaSettingsTab({ workspaceId, initialConfig, businessName }: Props) {
+export function AgendaSettingsTab({
+  workspaceId,
+  initialConfig,
+  businessName,
+  simple = false,
+}: Props) {
   const ready =
     initialConfig.services.some((s) => s.active) &&
     initialConfig.staff.some((s) => s.active && s.hours.length > 0);
@@ -951,7 +958,9 @@ export function AgendaSettingsTab({ workspaceId, initialConfig, businessName }: 
             : "border-warning/40 bg-warning/10",
         )}
       >
-        {ready ? (
+        {ready && simple ? (
+          <>La agenda está lista: tus clientes ya pueden pedir cita.</>
+        ) : ready ? (
           <>
             La agenda está lista. Activa las tools <strong>Agenda</strong> en la
             pestaña Tools para que el agente pueda reservar.

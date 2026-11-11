@@ -82,7 +82,7 @@ export async function middleware(request: NextRequest) {
       pathname === "/forgot-password")
   ) {
     const url = request.nextUrl.clone();
-    url.pathname = "/inbox";
+    url.pathname = "/hoy";
     return NextResponse.redirect(url);
   }
 

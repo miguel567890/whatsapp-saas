@@ -110,12 +110,12 @@ export function BusinessInfoForm({ workspaceId, initial }: Props) {
     <div className="space-y-5">
       <div className="space-y-1.5">
         <Label htmlFor="bi-free-text" className="text-sm font-medium">
-          Información libre del negocio
+          Lo que debe saber tu recepcionista
         </Label>
         <Textarea
           id="bi-free-text"
           rows={4}
-          placeholder="Describe tu negocio, servicios, precios, horarios..."
+          placeholder="Dirección, cómo llegar, precios, formas de pago, normas (p. ej. avisar con 24 h para cancelar)..."
           value={freeText}
           onChange={(e) => setFreeText(e.target.value)}
           className="resize-none"

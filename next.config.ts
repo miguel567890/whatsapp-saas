@@ -16,6 +16,8 @@ const PANEL_PATHS = [
   "dashboard",
   "workspaces",
   "onboarding",
+  "hoy",
+  "negocio",
 ];
 
 // connect-src: realtime needs the wss:// scheme explicitly (a schemeless

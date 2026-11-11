@@ -50,7 +50,7 @@ export async function login(
     return { error: localizeAuthError(error.message) };
   }
 
-  redirect("/inbox");
+  redirect("/hoy");
 }
 
 export async function signup(

@@ -54,7 +54,8 @@ function revalidate() {
   revalidatePath("/agenda");
 }
 
-const uuid = z.string().uuid();
+// Formato UUID sin exigir versión (como en public-actions).
+const uuid = z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, "Identificador no válido");
 const hhmm = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Hora HH:MM");
 
 // ── Ajustes ───────────────────────────────────────────────────────────────────

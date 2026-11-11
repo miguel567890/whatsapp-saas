@@ -21,7 +21,7 @@ export default async function AgencyWorkspacesPage() {
     .eq("id", user.id)
     .single();
 
-  if (!userRow?.is_super_admin) redirect("/inbox");
+  if (!userRow?.is_super_admin) redirect("/hoy");
 
   const result = await getAllWorkspacesWithStats();
 
