@@ -16,6 +16,9 @@ export interface BookingSettings {
   reminder_hours_before: number;
   reminder_template_name: string | null;
   reminder_template_language: string;
+  public_enabled: boolean;
+  public_slug: string | null;
+  public_intro: string | null;
 }
 
 export const DEFAULT_BOOKING_SETTINGS: Omit<BookingSettings, "workspace_id"> = {
@@ -26,6 +29,9 @@ export const DEFAULT_BOOKING_SETTINGS: Omit<BookingSettings, "workspace_id"> = {
   reminder_hours_before: 24,
   reminder_template_name: null,
   reminder_template_language: "es",
+  public_enabled: false,
+  public_slug: null,
+  public_intro: null,
 };
 
 export interface BookingService {
@@ -79,7 +85,7 @@ export interface AppointmentRow {
   customer_name: string | null;
   customer_phone: string | null;
   notes: string | null;
-  source: "agent" | "manual" | "highlevel";
+  source: "agent" | "manual" | "highlevel" | "web";
   reminder_sent_at: string | null;
   created_at: string;
 }

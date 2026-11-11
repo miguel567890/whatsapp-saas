@@ -328,7 +328,7 @@ export interface CreateAppointmentParams {
   customerName?: string | null;
   customerPhone?: string | null;
   notes?: string | null;
-  source: "agent" | "manual";
+  source: "agent" | "manual" | "web";
   /**
    * true (agente): la hora debe ser un hueco libre dentro del horario.
    * false (panel): solo se exige que el profesional no tenga otra cita a esa hora.

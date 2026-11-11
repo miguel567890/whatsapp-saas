@@ -250,7 +250,7 @@ function AppointmentCard({
           <p className="truncate text-xs text-muted-foreground">
             {service?.name ?? "Servicio"}
             {staff ? ` · ${staff.name}` : ""}
-            {appt.source === "agent" ? " · por WhatsApp" : ""}
+            {appt.source === "agent" ? " · por WhatsApp" : appt.source === "web" ? " · por la web" : ""}
           </p>
           {appt.notes && (
             <p className="mt-1 text-xs text-muted-foreground">“{appt.notes}”</p>

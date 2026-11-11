@@ -65,6 +65,58 @@
     --radius: 0.875rem;
   }
 
+  /* Páginas públicas (reservas, web de Citaya): siempre en claro, aunque el
+     panel esté en modo oscuro. Mismas variables que :root. */
+  .public-light {
+    /* Light mode (toggle) — blanco frío neutro, NUNCA crema */
+    --background: 0.99 0.002 247;
+    --foreground: 0.2 0.01 264;
+
+    --card: 1 0 0;
+    --card-foreground: 0.2 0.01 264;
+
+    --popover: 1 0 0;
+    --popover-foreground: 0.2 0.01 264;
+
+    /* Electric Lime — acento de marca (raro = explota) */
+    --primary: 0.9 0.21 126;
+    --primary-foreground: 0.24 0.05 128;
+
+    --secondary: 0.96 0.003 247;
+    --secondary-foreground: 0.25 0.01 264;
+
+    --muted: 0.96 0.003 247;
+    --muted-foreground: 0.5 0.012 264;
+
+    --accent: 0.95 0.008 247;
+    --accent-foreground: 0.22 0.01 264;
+
+    --destructive: 0.58 0.22 25;
+    --destructive-foreground: 0.99 0 0;
+
+    --success: 0.65 0.17 150;
+    --warning: 0.78 0.16 80;
+    --info: 0.62 0.15 250;
+
+    --border: 0.91 0.004 264;
+    --input: 0.91 0.004 264;
+    --ring: 0.9 0.21 126;
+
+    --chart-1: 0.9 0.21 126;
+    --chart-2: 0.62 0.15 250;
+    --chart-3: 0.78 0.16 80;
+    --chart-4: 0.65 0.17 150;
+    --chart-5: 0.58 0.22 25;
+
+    /* Glassmorphism (light) */
+    --glass-bg: 1 0 0;
+    --glass-bg-alpha: 0.6;
+    --glass-border-alpha: 0.5;
+
+    --radius: 0.875rem;
+    color-scheme: light;
+  }
+
   .dark {
     /* Dark mode (default) — deep cool black para que el glass + lime brillen */
     --background: 0.17 0.006 264;

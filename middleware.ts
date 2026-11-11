@@ -1,7 +1,14 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+/** Páginas públicas (reservas y portada): no necesitan sesión. */
+function isAnonymousPage(pathname: string): boolean {
+  return pathname.startsWith("/r/") || pathname === "/bienvenida";
+}
+
 export async function middleware(request: NextRequest) {
+  if (isAnonymousPage(request.nextUrl.pathname)) return NextResponse.next();
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(

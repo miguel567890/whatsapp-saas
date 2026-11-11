@@ -19,6 +19,7 @@ import {
   rescheduleAppointment,
 } from "./booking-service";
 import { addDays, parseStart, zonedToUtc } from "../lib/time";
+import { isValidPublicSlug } from "../lib/public-slug";
 
 type ActionResult<T = null> = { ok: true; data: T } | { ok: false; error: string };
 
@@ -455,4 +456,61 @@ export async function moveAppointmentFromPanel(
   if (!res.ok) return { ok: false, error: res.error };
   revalidate();
   return { ok: true, data: null };
+}
+
+// ── Página de reservas pública ────────────────────────────────────────────────
+
+const publicPageSchema = z.object({
+  enabled: z.boolean(),
+  slug: z.string().trim().toLowerCase().max(50),
+  intro: z
+    .string()
+    .trim()
+    .max(300)
+    .nullable()
+    .optional()
+    .transform((v) => (v ? v : null)),
+});
+
+export async function savePublicPage(
+  workspaceId: string,
+  input: unknown,
+): Promise<ActionResult<{ slug: string | null }>> {
+  const denied = await assertRole(workspaceId, CONFIG_ROLES);
+  if (denied) return { ok: false, error: denied };
+  const parsed = publicPageSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "Datos no válidos" };
+  const { enabled, intro } = parsed.data;
+  const slug = parsed.data.slug || null;
+
+  if (slug && !isValidPublicSlug(slug)) {
+    return {
+      ok: false,
+      error:
+        "El enlace solo puede tener letras minúsculas, números y guiones (3–50), y no puede ser una palabra reservada.",
+    };
+  }
+  if (enabled && !slug) {
+    return { ok: false, error: "Elige un nombre para el enlace antes de activarla" };
+  }
+
+  const { error } = await bookingDb()
+    .from("booking_settings")
+    .upsert({
+      workspace_id: workspaceId,
+      public_enabled: enabled,
+      public_slug: slug,
+      public_intro: intro,
+    });
+  if (error) {
+    return {
+      ok: false,
+      error:
+        error.code === "23505"
+          ? "Ese enlace ya lo usa otro negocio. Prueba con otro."
+          : "No se pudo guardar la página de reservas",
+    };
+  }
+  revalidate();
+  return { ok: true, data: { slug } };
 }

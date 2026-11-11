@@ -6,6 +6,8 @@ import {
   CalendarOff,
   Clock,
   Copy,
+  ExternalLink,
+  Globe,
   Plus,
   Save,
   Scissors,
@@ -22,12 +24,14 @@ import { cn } from "@/lib/utils";
 import {
   addTimeOff,
   deleteService,
+  savePublicPage,
   deleteStaff,
   deleteTimeOff,
   saveBookingSettings,
   upsertService,
   upsertStaff,
 } from "../services/booking-actions";
+import { PUBLIC_SITE_URL, slugify } from "../lib/public-slug";
 import type {
   BookingConfig,
   BookingHoursRow,
@@ -49,6 +53,7 @@ const WEEKDAYS: { value: number; label: string }[] = [
 interface Props {
   workspaceId: string;
   initialConfig: BookingConfig;
+  businessName?: string | null;
 }
 
 function Section({
@@ -817,9 +822,121 @@ function TimeOffSection({ workspaceId, initialConfig }: Props) {
   );
 }
 
+// ── Página de reservas pública ────────────────────────────────────────────────
+
+function PublicPageSection({ workspaceId, initialConfig, businessName }: Props) {
+  const s = initialConfig.settings;
+  const [enabled, setEnabled] = useState(s.public_enabled);
+  const [slug, setSlug] = useState(
+    s.public_slug ?? (businessName ? slugify(businessName) : ""),
+  );
+  const [intro, setIntro] = useState(s.public_intro ?? "");
+  const [pending, start] = useTransition();
+  const router = useRouter();
+  const savedUrl =
+    s.public_enabled && s.public_slug ? `${PUBLIC_SITE_URL}/${s.public_slug}` : null;
+
+  function save() {
+    start(async () => {
+      const res = await savePublicPage(workspaceId, {
+        enabled,
+        slug: slugify(slug),
+        intro: intro || null,
+      });
+      if (res.ok) {
+        toast.success(enabled ? "Página de reservas publicada" : "Página de reservas guardada");
+        router.refresh();
+      } else toast.error(res.error);
+    });
+  }
+
+  return (
+    <Section
+      icon={Globe}
+      title="Página de reservas"
+      description="Un enlace para que tus clientes reserven solos, sin escribir a nadie. Ponlo en Instagram, Google Maps o en un QR."
+    >
+      {savedUrl && (
+        <div className="flex flex-col gap-2 rounded-lg border border-success/40 bg-success/10 p-3 sm:flex-row sm:items-center sm:justify-between">
+          <span className="truncate font-mono text-sm">{savedUrl}</span>
+          <div className="flex shrink-0 gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                void navigator.clipboard?.writeText(savedUrl);
+                toast.success("Enlace copiado");
+              }}
+            >
+              <Copy className="h-3.5 w-3.5" aria-hidden="true" />
+              Copiar
+            </Button>
+            <a href={savedUrl} target="_blank" rel="noreferrer">
+              <Button variant="ghost" size="sm">
+                <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+                Abrir
+              </Button>
+            </a>
+          </div>
+        </div>
+      )}
+
+      <div className="space-y-4 rounded-lg border border-border/60 p-4">
+        <label className="flex items-center justify-between gap-4">
+          <span>
+            <span className="block text-sm font-medium">Página activa</span>
+            <span className="text-xs text-muted-foreground">
+              Si la desactivas, el enlace deja de funcionar.
+            </span>
+          </span>
+          <Switch checked={enabled} onCheckedChange={setEnabled} aria-label="Activar página de reservas" />
+        </label>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="pp-slug">Enlace</Label>
+          <div className="flex items-center overflow-hidden rounded-md border border-input">
+            <span className="shrink-0 bg-muted px-3 py-2 text-sm text-muted-foreground">
+              {PUBLIC_SITE_URL.replace(/^https?:\/\//, "")}/
+            </span>
+            <input
+              id="pp-slug"
+              value={slug}
+              onChange={(e) => setSlug(e.target.value)}
+              onBlur={() => setSlug(slugify(slug))}
+              placeholder="barberia-juan"
+              className="h-9 min-w-0 flex-1 bg-transparent px-2 text-sm outline-none"
+            />
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Solo minúsculas, números y guiones. Ej: barberia-juan
+          </p>
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="pp-intro">Texto de bienvenida (opcional)</Label>
+          <Input
+            id="pp-intro"
+            value={intro}
+            maxLength={300}
+            onChange={(e) => setIntro(e.target.value)}
+            placeholder="Barbería en el centro de Chiclana. ¡Te esperamos!"
+          />
+        </div>
+
+        <div className="flex justify-end">
+          <Button onClick={save} disabled={pending}>
+            <Save className="h-4 w-4" aria-hidden="true" />
+            Guardar página
+          </Button>
+        </div>
+      </div>
+    </Section>
+  );
+}
+
 // ── Pestaña completa ──────────────────────────────────────────────────────────
 
-export function AgendaSettingsTab({ workspaceId, initialConfig }: Props) {
+export function AgendaSettingsTab({ workspaceId, initialConfig, businessName }: Props) {
   const ready =
     initialConfig.services.some((s) => s.active) &&
     initialConfig.staff.some((s) => s.active && s.hours.length > 0);
@@ -852,6 +969,11 @@ export function AgendaSettingsTab({ workspaceId, initialConfig }: Props) {
         workspaceId={workspaceId}
         staff={initialConfig.staff}
         services={initialConfig.services}
+      />
+      <PublicPageSection
+        workspaceId={workspaceId}
+        initialConfig={initialConfig}
+        businessName={businessName}
       />
       <TimeOffSection workspaceId={workspaceId} initialConfig={initialConfig} />
       <SettingsForm workspaceId={workspaceId} initialConfig={initialConfig} />

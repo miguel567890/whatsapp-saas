@@ -100,6 +100,9 @@ export function SettingsShell({
             <AgendaSettingsTab
               workspaceId={workspaceId}
               initialConfig={bookingConfig}
+              businessName={
+                (biForForm?.structured?.name as string | undefined) ?? null
+              }
             />
           </div>
         </TabsContent>

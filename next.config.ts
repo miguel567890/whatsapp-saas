@@ -2,6 +2,22 @@ import type { NextConfig } from "next";
 
 const isDev = process.env.NODE_ENV !== "production";
 
+// Dominio público de Citaya y panel de gestión.
+const PUBLIC_HOST_RE = process.env.PUBLIC_HOST_RE ?? "(?:www\\.)?holacitaya\\.app";
+const PANEL_URL = process.env.PANEL_URL ?? "https://panel.holacitaya.app";
+const PANEL_PATHS = [
+  "login",
+  "signup",
+  "forgot-password",
+  "reset-password",
+  "inbox",
+  "agenda",
+  "settings",
+  "dashboard",
+  "workspaces",
+  "onboarding",
+];
+
 // connect-src: realtime needs the wss:// scheme explicitly (a schemeless
 // host-source does not reliably match WebSocket connections). In dev we also
 // allow the localhost HMR/RSC sockets so Turbopack's runtime works under CSP.
@@ -54,8 +70,29 @@ const nextConfig: NextConfig = {
       headers: securityHeaders,
     },
   ],
-  // Serve the app icon for legacy /favicon.ico probes (avoids a 404).
-  rewrites: async () => [{ source: "/favicon.ico", destination: "/icon.svg" }],
+  // holacitaya.app (dominio público): portada + páginas de reservas.
+  // Las rutas del panel que lleguen ahí se mandan a panel.holacitaya.app.
+  redirects: async () =>
+    PANEL_PATHS.map((p) => ({
+      source: `/${p}/:rest*`,
+      has: [{ type: "host" as const, value: PUBLIC_HOST_RE }],
+      destination: `${PANEL_URL}/${p}/:rest*`,
+      permanent: false,
+    })),
+  rewrites: async () => ({
+    beforeFiles: [
+      {
+        source: "/:slug([a-z0-9][a-z0-9-]{1,48}[a-z0-9])",
+        has: [{ type: "host", value: PUBLIC_HOST_RE }],
+        destination: "/r/:slug",
+      },
+    ],
+    afterFiles: [
+      // Serve the app icon for legacy /favicon.ico probes (avoids a 404).
+      { source: "/favicon.ico", destination: "/icon.svg" },
+    ],
+    fallback: [],
+  }),
 };
 
 export default nextConfig;
