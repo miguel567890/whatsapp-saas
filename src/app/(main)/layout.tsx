@@ -11,6 +11,11 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { LogOut } from "lucide-react";
 import { BottomNav, TopNav } from "@/components/main-nav";
+import { RegisterServiceWorker } from "@/components/pwa";
+import { pwaMetadata, pwaViewport } from "@/lib/pwa-metadata";
+
+export const metadata = pwaMetadata;
+export const viewport = pwaViewport;
 
 export default async function MainLayout({
   children,
@@ -104,6 +109,7 @@ export default async function MainLayout({
       <div className="flex-1 pb-16 md:pb-0">{children}</div>
 
       <BottomNav agency={isSuperAdmin} />
+      <RegisterServiceWorker />
     </div>
   );
 }

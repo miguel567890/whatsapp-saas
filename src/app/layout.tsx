@@ -15,8 +15,8 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "Agente WhatsApp",
-  description: "Plataforma de inbox conversacional para WhatsApp con IA",
+  title: "Citaya",
+  description: "Tu recepcionista de WhatsApp y tu agenda de citas.",
 };
 
 export default function RootLayout({

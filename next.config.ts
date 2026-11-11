@@ -71,6 +71,11 @@ const nextConfig: NextConfig = {
       source: "/(.*)",
       headers: securityHeaders,
     },
+    {
+      // El service worker siempre se revisa en red para que los cambios lleguen.
+      source: "/sw.js",
+      headers: [{ key: "Cache-Control", value: "no-cache, no-store, must-revalidate" }],
+    },
   ],
   // holacitaya.app (dominio público): portada + páginas de reservas.
   // Las rutas del panel que lleguen ahí se mandan a panel.holacitaya.app.

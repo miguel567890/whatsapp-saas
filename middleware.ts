@@ -90,5 +90,9 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|api/).*)"],
+  // Fuera: estáticos, API y los ficheros de la app instalable (manifest,
+  // service worker e iconos), que deben cargarse también sin sesión.
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|api/|manifest.webmanifest|sw.js|icons/|icon.svg|apple-icon.png).*)",
+  ],
 };

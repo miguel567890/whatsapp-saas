@@ -39,10 +39,10 @@ export function LoginForm({ message }: { message?: string }) {
     <div className={cn("glass rounded-xl p-8 w-full max-w-md space-y-6")}>
       <div className="space-y-1">
         <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-          Bienvenido de vuelta
+          Hola de nuevo
         </h1>
         <p className="text-sm text-muted-foreground">
-          Ingresa a tu cuenta para continuar
+          Entra para ver tu agenda y tus mensajes
         </p>
       </div>
 
@@ -70,7 +70,15 @@ export function LoginForm({ message }: { message?: string }) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="password">Contraseña</Label>
+          <div className="flex items-baseline justify-between">
+            <Label htmlFor="password">Contraseña</Label>
+            <Link
+              href="/forgot-password"
+              className="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+            >
+              ¿La has olvidado?
+            </Link>
+          </div>
           <Input
             id="password"
             name="password"
@@ -92,13 +100,13 @@ export function LoginForm({ message }: { message?: string }) {
       </form>
 
       <p className="text-center text-sm text-muted-foreground">
-        ¿No tienes cuenta?{" "}
-        <Link
-          href="/signup"
+        ¿Aún no usas Citaya?{" "}
+        <a
+          href={process.env.NEXT_PUBLIC_PUBLIC_SITE_URL ?? "https://holacitaya.app"}
           className="text-primary underline-offset-4 hover:underline transition-colors duration-150"
         >
-          Crear cuenta
-        </Link>
+          Pruébalo gratis
+        </a>
       </p>
     </div>
   );

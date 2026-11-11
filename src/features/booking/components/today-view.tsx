@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { InstallAppCard } from "@/components/pwa";
 import { cn } from "@/lib/utils";
 import { AppointmentCard, NewAppointmentForm } from "./agenda-board";
 import { formatDayLabel, localParts } from "../lib/time";
@@ -171,6 +172,8 @@ export function TodayView({
           Nueva cita
         </Button>
       </div>
+
+      <InstallAppCard />
 
       {creating && (
         <NewAppointmentForm

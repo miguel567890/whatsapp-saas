@@ -39,7 +39,7 @@ export default async function AgencyLayout({
       >
         <div className="flex items-center gap-2.5">
           <span className="font-display text-base font-semibold text-primary tracking-tight">
-            Agente WA
+            Citaya
           </span>
           <Badge
             variant="outline"
