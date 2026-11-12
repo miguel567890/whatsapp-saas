@@ -190,7 +190,7 @@ export function PublicBookingFlow({ business }: Props) {
             </p>
             {done.consent && (
               <p className="mt-4 text-sm text-muted-foreground">
-                Te enviaremos un recordatorio por WhatsApp antes de la cita.
+                Te enviaremos la confirmación y un recordatorio por WhatsApp.
               </p>
             )}
             {business.whatsapp && (
@@ -449,7 +449,7 @@ export function PublicBookingFlow({ business }: Props) {
                       onChange={(e) => setConsent(e.target.checked)}
                       className="mt-0.5 h-4 w-4 accent-foreground"
                     />
-                    Quiero recibir el recordatorio de mi cita por WhatsApp.
+                    Quiero recibir la confirmación y el recordatorio de mi cita por WhatsApp.
                   </label>
 
                   {error && (

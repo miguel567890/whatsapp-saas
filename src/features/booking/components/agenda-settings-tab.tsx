@@ -8,7 +8,9 @@ import {
   Copy,
   ExternalLink,
   Globe,
+  MessageCircle,
   Plus,
+  RefreshCw,
   Save,
   Scissors,
   Trash2,
@@ -23,6 +25,8 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
   addTimeOff,
+  checkBookingTemplates,
+  prepareBookingTemplates,
   deleteService,
   savePublicPage,
   deleteStaff,
@@ -32,6 +36,7 @@ import {
   upsertStaff,
 } from "../services/booking-actions";
 import { PUBLIC_SITE_URL, slugify } from "../lib/public-slug";
+import type { BookingTemplatesStatus, TemplateState } from "../services/booking-templates";
 import type {
   BookingConfig,
   BookingHoursRow,
@@ -56,6 +61,8 @@ interface Props {
   businessName?: string | null;
   /** Vista del negocio: oculta referencias a la configuración técnica. */
   simple?: boolean;
+  /** Estado de las plantillas de WhatsApp para los avisos de cita. */
+  templateStatus?: BookingTemplatesStatus;
 }
 
 function Section({
@@ -89,7 +96,103 @@ function Section({
 
 // ── Ajustes generales ─────────────────────────────────────────────────────────
 
-function SettingsForm({ workspaceId, initialConfig }: Props) {
+// ── Avisos por WhatsApp ───────────────────────────────────────────────────────
+
+const TEMPLATE_STATE: Record<TemplateState, { label: string; className: string }> = {
+  missing: { label: "Sin preparar", className: "bg-muted text-muted-foreground" },
+  draft: { label: "Sin enviar", className: "bg-muted text-muted-foreground" },
+  submitted: { label: "En revisión", className: "bg-warning/15 text-warning" },
+  approved: { label: "Aprobada", className: "bg-success/15 text-success" },
+  rejected: { label: "Rechazada", className: "bg-destructive/15 text-destructive" },
+  paused: { label: "Pausada", className: "bg-destructive/15 text-destructive" },
+};
+
+function WhatsAppNotices({
+  workspaceId,
+  status,
+}: {
+  workspaceId: string;
+  status: BookingTemplatesStatus;
+}) {
+  const [current, setCurrent] = useState(status);
+  const [pending, start] = useTransition();
+  const router = useRouter();
+  const states = [current.confirmation, current.reminder];
+  const allApproved = states.every((s) => s === "approved");
+  const needsSubmit = states.some((s) => s === "missing" || s === "draft" || s === "rejected");
+
+  function run(fn: typeof prepareBookingTemplates, okMsg: string) {
+    start(async () => {
+      const res = await fn(workspaceId);
+      if (res.ok) {
+        setCurrent(res.data);
+        toast.success(okMsg);
+        router.refresh();
+      } else toast.error(res.error);
+    });
+  }
+
+  const row = (label: string, hint: string, state: TemplateState) => (
+    <li className="flex items-start justify-between gap-3 py-2">
+      <div className="min-w-0">
+        <p className="text-sm">{label}</p>
+        <p className="text-xs text-muted-foreground">{hint}</p>
+      </div>
+      <span className={cn("shrink-0 rounded-full px-2 py-0.5 text-xs", TEMPLATE_STATE[state].className)}>
+        {TEMPLATE_STATE[state].label}
+      </span>
+    </li>
+  );
+
+  return (
+    <div className="space-y-3 rounded-lg border border-border/60 p-4">
+      <div className="flex items-start gap-3">
+        <MessageCircle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+        <div>
+          <p className="text-sm font-medium">Avisos a clientes que reservan por la web</p>
+          <p className="text-xs text-muted-foreground">
+            WhatsApp solo deja escribir primero con mensajes aprobados por Meta. Prepáralos
+            una vez y se usarán solos. La aprobación suele tardar de minutos a unas horas.
+          </p>
+        </div>
+      </div>
+      <ul className="divide-y divide-border/60">
+        {row("Cita confirmada", "Se envía al momento de reservar.", current.confirmation)}
+        {row("Recordatorio", "Se envía antes de la cita.", current.reminder)}
+      </ul>
+      {!allApproved && (
+        <div className="flex flex-wrap gap-2">
+          {needsSubmit ? (
+            <Button
+              size="sm"
+              disabled={pending}
+              onClick={() => run(prepareBookingTemplates, "Mensajes enviados a revisión")}
+            >
+              Preparar mensajes
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={pending}
+              onClick={() => run(checkBookingTemplates, "Estado actualizado")}
+            >
+              <RefreshCw className="h-4 w-4" aria-hidden="true" />
+              Comprobar estado
+            </Button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SettingsForm({
+  workspaceId,
+  initialConfig,
+  simple = false,
+  templateStatus,
+}: Props) {
   const s = initialConfig.settings;
   const [form, setForm] = useState({
     slot_step_min: String(s.slot_step_min),
@@ -99,16 +202,27 @@ function SettingsForm({ workspaceId, initialConfig }: Props) {
     reminder_hours_before: String(s.reminder_hours_before),
     reminder_template_name: s.reminder_template_name ?? "",
     reminder_template_language: s.reminder_template_language,
+    confirmation_template_name: s.confirmation_template_name ?? "",
   });
   const [pending, start] = useTransition();
   const router = useRouter();
 
   function save() {
     start(async () => {
-      const res = await saveBookingSettings(workspaceId, {
-        ...form,
-        reminder_template_name: form.reminder_template_name || null,
-      });
+      // En la vista del negocio no se tocan los nombres de plantilla: los
+      // gestiona "Preparar mensajes".
+      const { reminder_template_name, confirmation_template_name, ...rest } = form;
+      const res = await saveBookingSettings(
+        workspaceId,
+        simple
+          ? rest
+          : {
+              ...rest,
+              // Vacío = no cambiar (evita borrar lo que dejó "Preparar mensajes").
+              ...(reminder_template_name ? { reminder_template_name } : {}),
+              ...(confirmation_template_name ? { confirmation_template_name } : {}),
+            },
+      );
       if (res.ok) {
         toast.success("Ajustes de agenda guardados");
         router.refresh();
@@ -153,8 +267,7 @@ function SettingsForm({ workspaceId, initialConfig }: Props) {
           <div>
             <p className="text-sm font-medium">Recordatorio por WhatsApp</p>
             <p className="text-xs text-muted-foreground">
-              Se envía antes de cada cita. Si la conversación lleva más de 24 h
-              sin mensajes, WhatsApp exige una plantilla aprobada.
+              Se envía antes de cada cita (cuántas horas antes, lo eliges tú).
             </p>
           </div>
           <Switch
@@ -166,6 +279,7 @@ function SettingsForm({ workspaceId, initialConfig }: Props) {
         {form.reminders_enabled && (
           <div className="grid gap-4 sm:grid-cols-3">
             {field("reminder_hours_before", "Horas antes")}
+            {!simple && (
             <div className="space-y-1.5 sm:col-span-2">
               <Label htmlFor="bs-tpl">Plantilla (fuera de 24 h)</Label>
               <Input
@@ -181,9 +295,31 @@ function SettingsForm({ workspaceId, initialConfig }: Props) {
                 {"{{3}}"} fecha, {"{{4}}"} hora.
               </p>
             </div>
+            )}
+            {!simple && (
+              <div className="space-y-1.5 sm:col-span-3">
+                <Label htmlFor="bs-tpl-confirm">Plantilla de confirmación (reservas web)</Label>
+                <Input
+                  id="bs-tpl-confirm"
+                  placeholder="cita_confirmada"
+                  value={form.confirmation_template_name}
+                  onChange={(e) =>
+                    setForm({ ...form, confirmation_template_name: e.target.value })
+                  }
+                />
+                <p className="text-xs text-muted-foreground">
+                  Variables: {"{{1}}"} nombre, {"{{2}}"} servicio, {"{{3}}"} negocio,{" "}
+                  {"{{4}}"} fecha, {"{{5}}"} hora.
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>
+
+      {templateStatus && (
+        <WhatsAppNotices workspaceId={workspaceId} status={templateStatus} />
+      )}
 
       <div className="flex justify-end">
         <Button onClick={save} disabled={pending}>
@@ -943,6 +1079,7 @@ export function AgendaSettingsTab({
   initialConfig,
   businessName,
   simple = false,
+  templateStatus,
 }: Props) {
   const ready =
     initialConfig.services.some((s) => s.active) &&
@@ -985,7 +1122,12 @@ export function AgendaSettingsTab({
         businessName={businessName}
       />
       <TimeOffSection workspaceId={workspaceId} initialConfig={initialConfig} />
-      <SettingsForm workspaceId={workspaceId} initialConfig={initialConfig} />
+      <SettingsForm
+        workspaceId={workspaceId}
+        initialConfig={initialConfig}
+        simple={simple}
+        templateStatus={templateStatus}
+      />
     </div>
   );
 }

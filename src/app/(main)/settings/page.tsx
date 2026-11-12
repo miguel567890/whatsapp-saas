@@ -6,6 +6,7 @@ import { getPanelMode } from "@/features/workspace/services/panel-mode";
 import { listAgents } from "@/features/agents/services/agent-queries";
 import { SettingsShell } from "@/features/settings/components/settings-shell";
 import { loadBookingConfig } from "@/features/booking/services/booking-service";
+import { getBookingTemplatesStatus } from "@/features/booking/services/booking-templates";
 
 export default async function SettingsPage() {
   const supabase = await createClient();
@@ -67,9 +68,10 @@ export default async function SettingsPage() {
       .eq("workspace_id", workspaceId),
   ]);
 
-  const [initialAgents, bookingConfig] = await Promise.all([
+  const [initialAgents, bookingConfig, templateStatus] = await Promise.all([
     listAgents(svc, workspaceId),
     loadBookingConfig(svc, workspaceId),
+    getBookingTemplatesStatus(workspaceId),
   ]);
 
   // Mask credentials server-side before passing to client components
@@ -129,6 +131,7 @@ export default async function SettingsPage() {
       initialIntegrations={maskedIntegrations}
       initialAgents={initialAgents}
       bookingConfig={bookingConfig}
+      templateStatus={templateStatus}
     />
   );
 }

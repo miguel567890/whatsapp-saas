@@ -6,6 +6,7 @@ import {
   bookingDb,
   loadBookingConfig,
 } from "@/features/booking/services/booking-service";
+import { getBookingTemplatesStatus } from "@/features/booking/services/booking-templates";
 import { AgendaSettingsTab } from "@/features/booking/components/agenda-settings-tab";
 import { BusinessInfoForm } from "@/features/settings/components/business-info-form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -29,13 +30,14 @@ export default async function NegocioPage() {
   const workspaceId = membership.workspace_id;
 
   const db = bookingDb();
-  const [config, { data: bi }] = await Promise.all([
+  const [config, { data: bi }, templateStatus] = await Promise.all([
     loadBookingConfig(db, workspaceId),
     db
       .from("business_info")
       .select("structured, free_text")
       .eq("workspace_id", workspaceId)
       .maybeSingle(),
+    getBookingTemplatesStatus(workspaceId),
   ]);
   const businessInfo = bi
     ? {
@@ -73,6 +75,7 @@ export default async function NegocioPage() {
               initialConfig={config}
               businessName={(businessInfo?.structured.name as string | undefined) ?? null}
               simple={mode === "business"}
+              templateStatus={templateStatus}
             />
           </div>
         </TabsContent>

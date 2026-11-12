@@ -12,6 +12,7 @@
 
 import { dispatchTemplate, dispatchText } from "@/features/inbox/services/dispatch";
 import { bookingDb, loadBookingConfig } from "./booking-service";
+import { ensureConversation } from "./booking-notify";
 import { formatDayLabel, localParts } from "../lib/time";
 import type { AppointmentRow, BookingConfig } from "../types";
 
@@ -41,6 +42,11 @@ async function resolveConversation(
       .eq("phone", phone)
       .maybeSingle();
     contactId = (data?.id as string | undefined) ?? null;
+  }
+
+  // Reservas por la web: aún no hay chat, pero sí contacto → se crea.
+  if (!appt.conversation_id && contactId) {
+    return ensureConversation(appt.workspace_id, contactId);
   }
 
   let q = sb

@@ -12,6 +12,7 @@ import { AgentsTab } from "@/features/agents/components/agents-tab";
 import type { AgentDto } from "@/features/agents/types";
 import { AgendaSettingsTab } from "@/features/booking/components/agenda-settings-tab";
 import type { BookingConfig } from "@/features/booking/types";
+import type { BookingTemplatesStatus } from "@/features/booking/services/booking-templates";
 
 interface ToolItem {
   id: string;
@@ -32,6 +33,7 @@ interface Props {
   initialTemplates?: unknown[];
   initialAgents?: AgentDto[];
   bookingConfig: BookingConfig;
+  templateStatus?: BookingTemplatesStatus;
 }
 
 export function SettingsShell({
@@ -42,6 +44,7 @@ export function SettingsShell({
   initialTemplates = [],
   initialAgents = [],
   bookingConfig,
+  templateStatus,
 }: Props) {
   const biForForm = initialBusinessInfo as {
     structured: Record<string, unknown>;
@@ -100,6 +103,7 @@ export function SettingsShell({
             <AgendaSettingsTab
               workspaceId={workspaceId}
               initialConfig={bookingConfig}
+              templateStatus={templateStatus}
               businessName={
                 (biForForm?.structured?.name as string | undefined) ?? null
               }

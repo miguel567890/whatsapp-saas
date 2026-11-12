@@ -20,6 +20,11 @@ import {
 } from "./booking-service";
 import { addDays, parseStart, zonedToUtc } from "../lib/time";
 import { isValidPublicSlug } from "../lib/public-slug";
+import {
+  refreshBookingTemplatesStatus,
+  submitBookingTemplates,
+  type BookingTemplatesStatus,
+} from "./booking-templates";
 
 type ActionResult<T = null> = { ok: true; data: T } | { ok: false; error: string };
 
@@ -51,6 +56,8 @@ async function assertRole(
 
 function revalidate() {
   revalidatePath("/settings");
+  revalidatePath("/negocio");
+  revalidatePath("/hoy");
   revalidatePath("/agenda");
 }
 
@@ -71,8 +78,16 @@ const settingsSchema = z.object({
     .trim()
     .max(512)
     .nullable()
-    .transform((v) => (v ? v : null)),
+    .optional()
+    .transform((v) => (v === undefined ? undefined : v ? v : null)),
   reminder_template_language: z.string().trim().min(2).max(10).default("es"),
+  confirmation_template_name: z
+    .string()
+    .trim()
+    .max(512)
+    .nullable()
+    .optional()
+    .transform((v) => (v === undefined ? undefined : v ? v : null)),
 });
 
 export async function saveBookingSettings(
@@ -514,4 +529,29 @@ export async function savePublicPage(
   }
   revalidate();
   return { ok: true, data: { slug } };
+}
+
+// ── Avisos por WhatsApp (plantillas de Meta) ─────────────────────────────────
+
+/** Crea y manda a aprobar las plantillas de confirmación y recordatorio. */
+export async function prepareBookingTemplates(
+  workspaceId: string,
+): Promise<ActionResult<BookingTemplatesStatus>> {
+  const denied = await assertRole(workspaceId, CONFIG_ROLES);
+  if (denied) return { ok: false, error: denied };
+  const res = await submitBookingTemplates(workspaceId);
+  if (!res.ok) return res;
+  revalidate();
+  return { ok: true, data: res.status };
+}
+
+/** Consulta en WhatsApp si las plantillas ya están aprobadas. */
+export async function checkBookingTemplates(
+  workspaceId: string,
+): Promise<ActionResult<BookingTemplatesStatus>> {
+  const denied = await assertRole(workspaceId, CONFIG_ROLES);
+  if (denied) return { ok: false, error: denied };
+  const status = await refreshBookingTemplatesStatus(workspaceId);
+  revalidate();
+  return { ok: true, data: status };
 }

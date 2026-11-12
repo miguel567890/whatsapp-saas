@@ -16,6 +16,7 @@ export interface BookingSettings {
   reminder_hours_before: number;
   reminder_template_name: string | null;
   reminder_template_language: string;
+  confirmation_template_name: string | null;
   public_enabled: boolean;
   public_slug: string | null;
   public_intro: string | null;
@@ -26,9 +27,10 @@ export const DEFAULT_BOOKING_SETTINGS: Omit<BookingSettings, "workspace_id"> = {
   min_notice_min: 60,
   max_days_ahead: 30,
   reminders_enabled: true,
-  reminder_hours_before: 24,
+  reminder_hours_before: 1,
   reminder_template_name: null,
   reminder_template_language: "es",
+  confirmation_template_name: null,
   public_enabled: false,
   public_slug: null,
   public_intro: null,

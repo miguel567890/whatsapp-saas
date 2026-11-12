@@ -6,6 +6,8 @@
  * Nunca devuelve citas, contactos ni nada de otros negocios.
  */
 
+import { after } from "next/server";
+import { sendBookingConfirmation } from "./booking-notify";
 import {
   bookingDb,
   createAppointment,
@@ -282,6 +284,10 @@ export async function bookPublic(
           : "No se pudo hacer la reserva. Inténtalo de nuevo.",
     };
   }
+
+  // Confirmación por WhatsApp después de responder (no retrasa la página).
+  const appt = res.data;
+  after(() => sendBookingConfirmation(appt, config, business.name));
 
   const staff = config.staff.find((m) => m.id === res.data.staff_id);
   return {
