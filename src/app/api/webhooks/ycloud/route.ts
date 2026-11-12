@@ -147,12 +147,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         .select("workspace_id, credentials, config")
         .eq("provider", "ycloud")
         .eq("enabled", true)
-        .limit(10);
+        .limit(500);
 
+      const onlyDigits = (v: string | undefined | null) => (v ?? "").replace(/\D/g, "");
       ws =
         (integrations ?? []).find(
           (i: IntegrationRow) =>
-            (i.config as { phone_number?: string }).phone_number === toPhone,
+            !!toPhone &&
+            onlyDigits((i.config as { phone_number?: string }).phone_number) ===
+              onlyDigits(toPhone),
         ) ?? null;
     }
 
@@ -192,6 +195,22 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         await handleStatusUpdate(supabase, statusData.wamid, statusData.status);
       }
       return NextResponse.json({ received: true });
+    }
+
+    // Varios negocios en la misma cuenta de YCloud: cada URL (?wsid=) puede
+    // recibir también los eventos de los números de otros negocios. Solo se
+    // procesa el evento en el negocio dueño del número; el resto lo ignora
+    // (ese otro negocio lo recibe en su propia URL).
+    const businessPhone =
+      toPhone ??
+      ((body as { type?: string; whatsappMessage?: { from?: string } }).type ===
+      "whatsapp.smb.message.echoes"
+        ? ((body as { whatsappMessage?: { from?: string } }).whatsappMessage?.from ?? null)
+        : null);
+    const ownPhone = (ws.config as { phone_number?: string }).phone_number;
+    const digits = (v: string) => v.replace(/\D/g, "");
+    if (businessPhone && ownPhone && digits(businessPhone) !== digits(ownPhone)) {
+      return NextResponse.json({ received: true, skipped: "other_number" });
     }
 
     // Coexistencia: mensaje que el negocio escribió desde su app de WhatsApp.
