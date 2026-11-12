@@ -172,6 +172,14 @@ export function PublicBookingFlow({ business }: Props) {
       <a href="https://holacitaya.app" className="font-medium text-foreground underline-offset-2 hover:underline">
         Citaya
       </a>
+      {" · "}
+      <a href="https://holacitaya.app/legal/privacidad" className="underline-offset-2 hover:underline">
+        Privacidad
+      </a>
+      {" · "}
+      <a href="https://holacitaya.app/legal/aviso-legal" className="underline-offset-2 hover:underline">
+        Aviso legal
+      </a>
     </footer>
   );
 
@@ -449,7 +457,17 @@ export function PublicBookingFlow({ business }: Props) {
                       onChange={(e) => setConsent(e.target.checked)}
                       className="mt-0.5 h-4 w-4 accent-foreground"
                     />
-                    Quiero recibir la confirmación y el recordatorio de mi cita por WhatsApp.
+                    <span>
+                      Quiero recibir la confirmación y el recordatorio de mi cita por WhatsApp.{" "}
+                      <a
+                        href="https://holacitaya.app/legal/privacidad"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="underline underline-offset-2"
+                      >
+                        Cómo usamos tus datos
+                      </a>
+                    </span>
                   </label>
 
                   {error && (

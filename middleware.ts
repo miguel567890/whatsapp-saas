@@ -10,7 +10,13 @@ const PUBLIC_HOST = new RegExp(
 /** Páginas públicas (reservas y portada): no necesitan sesión. */
 function isAnonymousPage(request: NextRequest): boolean {
   const { pathname } = request.nextUrl;
-  if (pathname.startsWith("/r/") || pathname === "/bienvenida") return true;
+  if (
+    pathname.startsWith("/r/") ||
+    pathname.startsWith("/legal/") ||
+    pathname === "/bienvenida"
+  ) {
+    return true;
+  }
   // En el dominio público todo es anónimo: las rutas del panel ya se han
   // redirigido a panel.holacitaya.app en next.config (antes del middleware).
   const host = (request.headers.get("host") ?? "").split(":")[0];

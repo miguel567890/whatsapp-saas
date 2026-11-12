@@ -714,6 +714,12 @@ export function LandingPage() {
             <a href={`${PANEL_URL}/login`} className="hover:text-foreground">
               Acceso negocios
             </a>
+            <Link href="/legal/aviso-legal" className="hover:text-foreground">
+              Aviso legal
+            </Link>
+            <Link href="/legal/privacidad" className="hover:text-foreground">
+              Privacidad
+            </Link>
             <span>© {new Date().getFullYear()} Citaya</span>
           </div>
         </div>
