@@ -9,6 +9,7 @@ import {
   WifiOff,
   ExternalLink,
   Settings,
+  Sparkles,
   Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -18,7 +19,10 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CreateWorkspaceSheet } from "./create-workspace-sheet";
 import { switchWorkspace } from "@/features/workspace/services/actions";
-import { deleteWorkspaceForClient } from "../services/agency-actions";
+import {
+  applyReceptionistToWorkspace,
+  deleteWorkspaceForClient,
+} from "../services/agency-actions";
 import { cn } from "@/lib/utils";
 import type { WorkspaceWithStats } from "../types";
 
@@ -58,6 +62,21 @@ export function WorkspacesTable({ workspaces }: Props) {
   // The action only sets the cookie (no redirectTo); we navigate client-side —
   // mirroring WorkspaceSwitcher. A redirect() inside startTransition does not
   // navigate reliably on Next 16 / React 19, which left this button mute.
+  function handleReceptionist(workspaceId: string, name: string) {
+    if (
+      !confirm(
+        `¿Poner la recepcionista de Citaya en ${name}? Sustituye las instrucciones actuales de su agente de agendamiento y activa las herramientas de agenda.`,
+      )
+    )
+      return;
+    startRefresh(async () => {
+      const res = await applyReceptionistToWorkspace(workspaceId);
+      if (res.error) toast.error(res.error);
+      else toast.success(`Recepcionista lista en ${name}`);
+      router.refresh();
+    });
+  }
+
   function handleEnter(workspaceId: string, to: string) {
     startRefresh(async () => {
       const result = await switchWorkspace(workspaceId);
@@ -257,6 +276,19 @@ export function WorkspacesTable({ workspaces }: Props) {
                 <Settings className="h-3.5 w-3.5" aria-hidden="true" />
                 <span className="sr-only sm:not-sr-only sm:ml-1.5 text-xs">
                   Gestionar
+                </span>
+              </Button>
+
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-8 px-2.5 text-muted-foreground hover:text-foreground"
+                aria-label={`Poner la recepcionista de Citaya en ${workspace.name}`}
+                onClick={() => handleReceptionist(workspace.id, workspace.name)}
+              >
+                <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+                <span className="sr-only sm:not-sr-only sm:ml-1.5 text-xs">
+                  Recepcionista
                 </span>
               </Button>
 

@@ -56,7 +56,7 @@ export function CreateWorkspaceSheet({ open, onClose, onCreated }: Props) {
   const [name, setName] = useState("");
   const [clientEmail, setClientEmail] = useState("");
   const [clientPassword, setClientPassword] = useState("");
-  const [useCase, setUseCase] = useState<UseCase>("general");
+  const [useCase, setUseCase] = useState<UseCase>("agendamiento");
   const [webhookUrl, setWebhookUrl] = useState<string | null>(null);
   const [credentials, setCredentials] = useState<{
     email: string;
@@ -71,7 +71,7 @@ export function CreateWorkspaceSheet({ open, onClose, onCreated }: Props) {
     setName("");
     setClientEmail("");
     setClientPassword("");
-    setUseCase("general");
+    setUseCase("agendamiento");
     setWebhookUrl(null);
     setCredentials(null);
     setCopied(false);

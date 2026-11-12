@@ -1,4 +1,4 @@
-import { PenLine, Bot } from "lucide-react";
+import { PenLine, Bot, Smartphone } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { MessageRow } from "@/features/inbox/types";
 import { StatusIcon } from "./status-icon";
@@ -10,6 +10,15 @@ interface ChatMessageProps {
 
 /** Author chip for outbound messages: "IA" badge or the operator's name. */
 function OutboundAuthor({ message }: { message: MessageRow }) {
+  // Escrito por el negocio desde su app de WhatsApp (coexistencia).
+  if ((message.meta as { source?: string } | null)?.source === "business_app") {
+    return (
+      <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
+        <Smartphone className="h-3 w-3" aria-hidden="true" />
+        Desde tu móvil
+      </span>
+    );
+  }
   // AI-generated when there is no human sender.
   if (!message.sender_user_id) {
     return (

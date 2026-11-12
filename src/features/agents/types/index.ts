@@ -16,6 +16,11 @@ export interface AgentConfig {
   responseStyle?: ResponseStyle;
   /** Pause the AI when a human sends a manual message (default true). */
   sleepOnManualMessage?: boolean;
+  /**
+   * Horas sin que una persona escriba en un chat "Atiendes tú" para que la IA
+   * vuelva a contestar sola (por defecto 6; 0 = nunca vuelve sola).
+   */
+  resumeAiAfterHours?: number;
   /** config is open JSON; allow arbitrary extra keys. */
   [key: string]: unknown;
 }

@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { provisionWorkspaceUser } from "@/lib/auth/provision-user";
+import { applyReceptionist } from "../lib/receptionist";
 import type {
   ClientCredentials,
   CreateWorkspaceResult,
@@ -262,6 +263,12 @@ export async function createWorkspaceForClient(
     });
   }
 
+  // Negocios con cita previa: nacen con la recepcionista de Citaya lista.
+  if (useCase === "agendamiento") {
+    const applied = await applyReceptionist(service, workspaceId, userId);
+    if (!applied.ok) console.error("[agency] receptionist:", applied.error);
+  }
+
   // Fail loud instead of shipping a dead placeholder host to the client.
   // In dev, fall back to localhost so local testing works.
   const baseUrl =
@@ -382,4 +389,19 @@ export async function getAllWorkspacesWithStats(): Promise<GetWorkspacesResult> 
   }));
 
   return { workspaces: result };
+}
+
+/**
+ * Pone (o vuelve a poner) la recepcionista de Citaya en un negocio existente:
+ * instrucciones afinadas, modelo, tools de agenda y "pasar a persona".
+ */
+export async function applyReceptionistToWorkspace(
+  workspaceId: string,
+): Promise<{ error?: string; ok?: boolean }> {
+  const userId = await assertSuperAdmin();
+  if (!userId) return { error: "No autorizado" };
+  const parsed = z.string().uuid().safeParse(workspaceId);
+  if (!parsed.success) return { error: "Negocio no válido" };
+  const res = await applyReceptionist(svc(), parsed.data, userId);
+  return res.ok ? { ok: true } : { error: res.error };
 }

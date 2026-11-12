@@ -58,7 +58,15 @@ export async function decide(opts: {
     return { decision: "abstain", reason: "conversation_not_found" };
   }
 
-  const currentState = conv.state as ConversationState;
+  let currentState = conv.state as ConversationState;
+
+  // 1b. "Atiendes tú" caduca: si nadie del negocio escribe en un rato, la IA
+  //     vuelve a atender ese chat (si no, tras un solo mensaje del peluquero
+  //     desde su app, ese cliente se quedaría sin recepcionista para siempre).
+  if (currentState === "human_active") {
+    const resumed = await maybeResumeAi(workspaceId, conversationId);
+    if (resumed) currentState = "ai_active";
+  }
 
   // 2. Check if AI should respond in current state
   if (!aiShouldRespond(currentState)) {
@@ -121,6 +129,55 @@ export interface TransitionOptions {
  * entering a state hangs off here, so all callers must go through it rather
  * than UPDATE `conversations` directly.
  */
+const DEFAULT_RESUME_AI_HOURS = 6;
+
+async function maybeResumeAi(
+  workspaceId: string,
+  conversationId: string,
+): Promise<boolean> {
+  try {
+    const { getActiveAgent } = await import(
+      "@/features/agents/services/active-agent"
+    );
+    const agent = await getActiveAgent(workspaceId);
+    const raw = agent?.config?.resumeAiAfterHours;
+    const hours =
+      typeof raw === "number" && raw >= 0 ? raw : DEFAULT_RESUME_AI_HOURS;
+    if (hours === 0) return false;
+
+    const supabase = svc();
+    const since = new Date(Date.now() - hours * 3_600_000).toISOString();
+
+    // ¿Ha escrito alguien del negocio (panel o app) en ese tiempo?
+    const { data: human } = await supabase
+      .from("messages")
+      .select("id")
+      .eq("conversation_id", conversationId)
+      .eq("direction", "out")
+      .or("sender_user_id.not.is.null,meta->>source.eq.business_app")
+      .gte("created_at", since)
+      .limit(1);
+    if (human?.length) return false;
+
+    // ¿Se pasó a "Atiendes tú" hace poco (aunque aún no haya escrito)?
+    const { data: recent } = await supabase
+      .from("events")
+      .select("id")
+      .eq("conversation_id", conversationId)
+      .eq("type", "state_change")
+      .eq("payload->>to", "human_active")
+      .gte("created_at", since)
+      .limit(1);
+    if (recent?.length) return false;
+
+    await applyTransition(conversationId, "ai_active", { trigger: "auto_resume" });
+    return true;
+  } catch (err) {
+    console.warn("[decision-engine] auto-resume skipped:", err);
+    return false;
+  }
+}
+
 export async function applyTransition(
   conversationId: string,
   to: ConversationState,

@@ -134,6 +134,9 @@ export async function notifyHandoffPending(
   const { workspaceId, conversationId, trigger } = params;
 
   try {
+    // La recepcionista ya se despide ella misma cuando usa pasar_a_persona.
+    if (trigger === "agent_tool") return;
+
     const config = await getHandoffAckConfig(workspaceId);
 
     if (!config.enabled) return;

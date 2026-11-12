@@ -12,6 +12,7 @@ import {
   agendaServicesTool,
   agendaSlotsTool,
 } from "./tools/agenda";
+import { humanHandoffTool } from "./tools/handoff";
 
 registry.register(echoTool);
 registry.register(scheduleLinkTool);
@@ -24,6 +25,7 @@ registry.register(agendaBookTool);
 registry.register(agendaMyAppointmentsTool);
 registry.register(agendaCancelTool);
 registry.register(agendaRescheduleTool);
+registry.register(humanHandoffTool);
 
 export { registry };
 export type {

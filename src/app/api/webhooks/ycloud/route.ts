@@ -1,4 +1,8 @@
 import { type NextRequest, NextResponse, after } from "next/server";
+import {
+  parseBusinessAppEcho,
+  processBusinessAppEcho,
+} from "@/features/inbox/services/business-app-echo";
 import { createClient as createSbClient } from "@supabase/supabase-js";
 import {
   verifyYCloudSignature,
@@ -188,6 +192,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         await handleStatusUpdate(supabase, statusData.wamid, statusData.status);
       }
       return NextResponse.json({ received: true });
+    }
+
+    // Coexistencia: mensaje que el negocio escribió desde su app de WhatsApp.
+    const echo = parseBusinessAppEcho(body);
+    if (echo) {
+      const res = await processBusinessAppEcho(ws.workspace_id as string, echo);
+      return NextResponse.json({ received: true, echo: res.stored });
     }
 
     const normalized = parseInbound(body);
