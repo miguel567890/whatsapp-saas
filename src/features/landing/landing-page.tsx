@@ -12,7 +12,10 @@ import {
   MoonStar,
   Scissors,
   Smartphone,
+  Sparkles,
+  Store,
   UserRoundX,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 
@@ -31,6 +34,7 @@ const wa = (text: string) =>
 const WA_TRY = wa("Hola, quiero ver cómo funciona Citaya");
 const WA_TRIAL = wa("Hola, quiero probar Citaya 14 días en mi negocio");
 const WA_INFO = wa("Hola, quiero saber más de Citaya");
+const WA_CUSTOM = wa("Hola, os cuento cómo funciona mi negocio para ver si Citaya se adapta");
 
 // ── Piezas pequeñas ───────────────────────────────────────────────────────────
 
@@ -270,6 +274,100 @@ const FAQ: { q: string; a: string }[] = [
   },
 ];
 
+// ── A tu manera (personalización) ─────────────────────────────────────────────
+
+const YOUR_WAY: { Icon: LucideIcon; title: string; text: string }[] = [
+  {
+    Icon: Scissors,
+    title: "Tus servicios, con su tiempo real",
+    text: "Un degradado no ocupa lo mismo que unas mechas. Cada servicio reserva justo el hueco que necesita, con su precio.",
+  },
+  {
+    Icon: Users,
+    title: "Tu equipo, con sus turnos",
+    text: "Horarios partidos, el día que libra cada uno, vacaciones y festivos. Nadie recibe una cita cuando no está.",
+  },
+  {
+    Icon: MessageCircle,
+    title: "Tus normas, con tus palabras",
+    text: "Dirección, formas de pago, con cuánto hay que avisar para cancelar… Tu recepcionista lo explica como lo harías tú.",
+  },
+  {
+    Icon: BellRing,
+    title: "Tus avisos, cuando tú digas",
+    text: "Recordatorio una hora antes, la tarde anterior o cuando mejor te funcione con tu clientela.",
+  },
+  {
+    Icon: Link2,
+    title: "Tu enlace, con tu nombre",
+    text: "holacitaya.app/tu-negocio, listo para tu Instagram, tu ficha de Google y un QR en el mostrador.",
+  },
+];
+
+function SettingsMock() {
+  const services = [
+    { name: "Corte y peinado", min: 45, price: "25 €" },
+    { name: "Tinte raíz", min: 90, price: "45 €" },
+    { name: "Mechas balayage", min: 150, price: "80 €" },
+    { name: "Degradado", min: 30, price: "14 €" },
+  ];
+  return (
+    <div className="mx-auto w-full max-w-md rounded-3xl border border-border bg-card p-5 shadow-xl shadow-foreground/5">
+      <div className="flex items-center gap-2 border-b border-border pb-3">
+        <Store className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+        <p className="text-sm font-semibold">Mi negocio</p>
+        <span className="ml-auto rounded-full bg-success/15 px-2 py-0.5 text-[11px] text-success">
+          Guardado
+        </span>
+      </div>
+
+      <p className="mt-4 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+        Servicios
+      </p>
+      <ul className="mt-2 space-y-1.5">
+        {services.map((s) => (
+          <li
+            key={s.name}
+            className="flex items-center justify-between rounded-lg bg-muted/60 px-3 py-2 text-sm"
+          >
+            <span className="font-medium">{s.name}</span>
+            <span className="text-xs text-muted-foreground">
+              {s.min} min · <span className="font-semibold text-foreground">{s.price}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+
+      <p className="mt-4 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+        Equipo
+      </p>
+      <div className="mt-2 flex flex-wrap gap-2">
+        {["Lucía · Ma–Sá", "Álex · Lu–Vi", "Dani · tardes"].map((t) => (
+          <span key={t} className="rounded-full border border-border px-3 py-1 text-xs">
+            {t}
+          </span>
+        ))}
+      </div>
+
+      <div className="mt-4 space-y-2 border-t border-border pt-4 text-sm">
+        <div className="flex items-center justify-between">
+          <span>Recordatorio por WhatsApp</span>
+          <span className="flex items-center gap-2 text-xs text-muted-foreground">
+            1 h antes
+            <span aria-hidden="true" className="relative h-5 w-9 rounded-full bg-primary">
+              <span className="absolute right-0.5 top-0.5 h-4 w-4 rounded-full bg-primary-foreground" />
+            </span>
+          </span>
+        </div>
+        <div className="flex items-center justify-between">
+          <span>Avisar para cancelar</span>
+          <span className="text-xs text-muted-foreground">24 h antes</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Página ────────────────────────────────────────────────────────────────────
 
 export function LandingPage() {
@@ -402,6 +500,57 @@ export function LandingPage() {
                   <p className="mt-2 text-background/70">{text}</p>
                 </div>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* A tu manera */}
+        <section className="border-b border-border bg-muted/50 py-24">
+          <div className="mx-auto grid max-w-6xl items-center gap-14 px-4 sm:px-6 lg:grid-cols-[1.05fr_1fr]">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                A tu manera
+              </p>
+              <h2 className="mt-2 font-display text-3xl font-semibold leading-tight sm:text-4xl">
+                Citaya se adapta a tu negocio, no al revés
+              </h2>
+              <p className="mt-4 text-lg text-muted-foreground">
+                Tú pones las reglas. Citaya las cumple con cada cliente, a cualquier hora,
+                sin olvidarse de ninguna.
+              </p>
+              <ul className="mt-8 space-y-5">
+                {YOUR_WAY.map(({ Icon, title, text }) => (
+                  <li key={title} className="flex gap-4">
+                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-card ring-1 ring-border">
+                      <Icon className="h-5 w-5" aria-hidden="true" />
+                    </span>
+                    <div>
+                      <h3 className="font-semibold">{title}</h3>
+                      <p className="mt-1 text-muted-foreground">{text}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="space-y-5">
+              <SettingsMock />
+              <div className="mx-auto flex w-full max-w-md items-start gap-4 rounded-2xl border border-primary/50 bg-primary/15 p-5">
+                <Sparkles className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />
+                <div>
+                  <p className="font-semibold">¿Tu negocio tiene algo especial?</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Cuéntanoslo. Si necesitas algo a medida, lo estudiamos y te lo preparamos.
+                  </p>
+                  <a
+                    href={WA_CUSTOM}
+                    className="mt-3 inline-flex items-center gap-1 text-sm font-semibold underline-offset-4 hover:underline"
+                  >
+                    Cuéntanos qué necesitas
+                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                  </a>
+                </div>
+              </div>
             </div>
           </div>
         </section>
