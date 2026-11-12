@@ -28,7 +28,7 @@ const DEMO_SLUG = process.env.NEXT_PUBLIC_DEMO_SLUG ?? "demo";
 const wa = (text: string) =>
   `https://wa.me/${DEMO_WHATSAPP}?text=${encodeURIComponent(text)}`;
 
-const WA_TRY = wa("Hola, ¿tenéis hueco esta semana para un corte?");
+const WA_TRY = wa("Hola, quiero ver cómo funciona Citaya");
 const WA_TRIAL = wa("Hola, quiero probar Citaya 14 días en mi negocio");
 const WA_INFO = wa("Hola, quiero saber más de Citaya");
 
@@ -412,7 +412,7 @@ export function LandingPage() {
             <SectionTitle
               kicker="Pruébalo tú mismo"
               title="Ponte en el lugar de tu cliente"
-              intro="No te lo contamos: escríbele o reserva una cita de prueba y mira cómo responde."
+              intro="No te lo contamos: escríbenos o reserva una cita de prueba y mira cómo funciona."
             />
             <div className="mt-12 grid gap-4 md:grid-cols-2">
               <a
@@ -420,10 +420,10 @@ export function LandingPage() {
                 className="group rounded-2xl border border-border bg-card p-7 transition-shadow hover:shadow-lg"
               >
                 <MessageCircle className="h-7 w-7" aria-hidden="true" />
-                <h3 className="mt-4 text-xl font-semibold">Escríbele por WhatsApp</h3>
+                <h3 className="mt-4 text-xl font-semibold">Escríbenos por WhatsApp</h3>
                 <p className="mt-2 text-muted-foreground">
-                  Pide cita, pregunta un precio o cambia de hora. Te contesta la
-                  recepcionista de Citaya.
+                  Te contesta nuestra propia recepcionista: la misma tecnología que
+                  tendrás en tu negocio. Pregúntale lo que quieras o pide una llamada.
                 </p>
                 <span className="mt-5 inline-flex items-center gap-1 font-medium">
                   Abrir WhatsApp
@@ -438,10 +438,10 @@ export function LandingPage() {
                 className="group rounded-2xl border border-border bg-card p-7 transition-shadow hover:shadow-lg"
               >
                 <CalendarCheck className="h-7 w-7" aria-hidden="true" />
-                <h3 className="mt-4 text-xl font-semibold">Abre una página de reservas</h3>
+                <h3 className="mt-4 text-xl font-semibold">Reserva en nuestra barbería de prueba</h3>
                 <p className="mt-2 text-muted-foreground">
-                  Así la verán tus clientes: eligen servicio, profesional, día y hora en
-                  menos de un minuto.
+                  Así la verán tus clientes: eligen servicio, barbero, día y hora en menos
+                  de un minuto.
                 </p>
                 <span className="mt-5 inline-flex items-center gap-1 font-medium">
                   holacitaya.app/{DEMO_SLUG}
